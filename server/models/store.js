@@ -227,5 +227,479 @@ export const memoryStore = {
       sentAt: '2026-10-18T10:30:06.000Z'
     }
   ],
-  webhookEvents: []
+  webhookEvents: [],
+  users: [
+    {
+      _id: 'user_student_01',
+      name: 'Arun Kumar',
+      email: 'student@kaira.io',
+      password: '$2a$10$wU0uRk76c7s0hK0lB0oYgeX3/eN4X8Uf2H2jZ0Z2z3qY4s1Y4v4hK', // password123
+      phone: '+919876543210',
+      role: 'student',
+      avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80',
+      bio: 'Full stack learner passionate about AI Agents and Cloud Engineering.',
+      createdAt: '2026-10-18T10:00:00.000Z'
+    },
+    {
+      _id: 'user_admin_01',
+      name: 'Dr. Elena Vance (Admin)',
+      email: 'admin@kaira.io',
+      password: '$2a$10$wU0uRk76c7s0hK0lB0oYgeX3/eN4X8Uf2H2jZ0Z2z3qY4s1Y4v4hK', // admin123 / password123
+      phone: '+919812345678',
+      role: 'admin',
+      avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=150&q=80',
+      bio: 'Principal AI Architect & Course Director at Kaira Academy.',
+      createdAt: '2026-10-10T10:00:00.000Z'
+    }
+  ],
+  courses: [
+    {
+      _id: 'course_ai_agents',
+      slug: 'full-stack-ai-autonomous-agents',
+      title: 'Full-Stack AI & Autonomous Agent Architecture',
+      subtitle: 'Build, deploy, and monetize production-grade autonomous agent swarms with streaming tools, memory, and Razorpay',
+      description: 'Master the next era of software engineering. Learn to design multi-agent swarms using LLM function calling, vector memory retrieval, background execution loops, and automated payment gateways.',
+      category: 'AI & Agents',
+      level: 'All Levels',
+      language: 'English',
+      price: 499,
+      originalPrice: 2999,
+      currency: 'INR',
+      thumbnail: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80',
+      previewVideoUrl: '/videos/gemini_generated_video_323b2790.mp4',
+      badge: 'Bestseller',
+      rating: 4.95,
+      reviewsCount: 3820,
+      studentsCount: 18450,
+      durationHours: 24,
+      lecturesCount: 18,
+      certificateAvailable: true,
+      published: true,
+      instructor: {
+        name: 'Dr. Elena Vance',
+        title: 'Principal AI Architect & Founder, AI Innovations Lab',
+        avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=150&q=80',
+        bio: 'Over 12 years of enterprise engineering experience. Former AI Lead at major tech hubs, trained 45,000+ engineers worldwide.',
+        rating: '4.98 Instructor Rating',
+        studentsCount: 45000
+      },
+      whatYouWillLearn: [
+        'Build autonomous agent swarms with tool calling and dynamic task delegation',
+        'Implement real-time token streaming with React, Server-Sent Events & WebSockets',
+        'Integrate Razorpay payment checkouts with HMAC verification and GST invoicing',
+        'Store and query semantic memories using vector embeddings & hybrid indexes',
+        'Deploy enterprise agents to Docker, Kubernetes, and serverless clusters'
+      ],
+      requirements: [
+        'Basic familiarity with JavaScript or Python',
+        'Fundamental knowledge of web applications and REST APIs',
+        'No prior deep learning or machine learning background required'
+      ],
+      faqs: [
+        {
+          question: 'Are project source codes included in this course?',
+          answer: 'Yes! You receive full access to production-ready GitHub repositories with complete test coverage, CI/CD pipelines, and configuration templates.'
+        },
+        {
+          question: 'Will I receive a verifiable certificate upon completion?',
+          answer: 'Yes! Upon finishing 100% of the lessons, an official, verifiable Certificate of Completion with a unique ID and verification link is generated instantly.'
+        },
+        {
+          question: 'Is lifetime access included?',
+          answer: 'Yes, all enrolled students receive lifetime access to all course modules, updates, and community Q&A.'
+        }
+      ],
+      modules: [
+        {
+          _id: 'mod_01',
+          title: 'Module 1: Foundations of Agentic AI & Tool Calling',
+          lessons: [
+            {
+              _id: 'les_01_01',
+              title: '01. Welcome & Architecture Blueprint of Autonomous Systems',
+              duration: '14 min',
+              durationSec: 840,
+              videoUrl: '/videos/gemini_generated_video_323b2790.mp4',
+              isFreePreview: true,
+              summary: 'Comprehensive overview of multi-agent paradigms, memory hierarchies, and the real-world roadmap.'
+            },
+            {
+              _id: 'les_01_02',
+              title: '02. LLM Function Calling & JSON Schema Definitions',
+              duration: '18 min',
+              durationSec: 1080,
+              videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
+              isFreePreview: true,
+              summary: 'How LLMs safely invoke external functions with strict type guarantees.'
+            },
+            {
+              _id: 'les_01_03',
+              title: '03. ReAct Loops & Self-Correction Techniques',
+              duration: '22 min',
+              durationSec: 1320,
+              videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+              isFreePreview: false,
+              summary: 'Implementing observation-thought-action feedback loops for error resilience.'
+            }
+          ]
+        },
+        {
+          _id: 'mod_02',
+          title: 'Module 2: Building Full-Stack Agentic SaaS with React & Express',
+          lessons: [
+            {
+              _id: 'les_02_01',
+              title: '04. Real-time Streaming UI & Token Rendering in React',
+              duration: '26 min',
+              durationSec: 1560,
+              videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
+              isFreePreview: false,
+              summary: 'Building ultra-responsive token streaming interfaces using modern React hooks.'
+            },
+            {
+              _id: 'les_02_02',
+              title: '05. Asynchronous Background Execution & Task Management',
+              duration: '20 min',
+              durationSec: 1200,
+              videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4',
+              isFreePreview: false,
+              summary: 'Managing long-running agent threads with Node.js worker pools and Redis queues.'
+            }
+          ]
+        },
+        {
+          _id: 'mod_03',
+          title: 'Module 3: Monetization Engine: Razorpay Checkout & Webhooks',
+          lessons: [
+            {
+              _id: 'les_03_01',
+              title: '06. Secure Razorpay Checkout & Server Signature Verification',
+              duration: '25 min',
+              durationSec: 1500,
+              videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4',
+              isFreePreview: false,
+              summary: 'Implementing HMAC-SHA256 signature verification and order idempotency.'
+            },
+            {
+              _id: 'les_03_02',
+              title: '07. Automated GST Tax Invoicing & PDF Generation',
+              duration: '19 min',
+              durationSec: 1140,
+              videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyBlazes.mp4',
+              isFreePreview: false,
+              summary: 'Generating legal GST PDF invoices and sending automated confirmation emails.'
+            }
+          ]
+        }
+      ]
+    },
+    {
+      _id: 'course_mern_saas',
+      slug: 'modern-mern-stack-saas-payments',
+      title: 'Modern MERN Stack 2026: Next-Gen SaaS & Payments',
+      subtitle: 'Build and deploy enterprise full-stack web applications with React, Express, MongoDB, and Tailwind CSS',
+      description: 'Go from frontend fundamentals to high-scale production MERN architecture. Master JWT authentication, role-based access control, Razorpay payments, and clean microservice structure.',
+      category: 'Full-Stack Development',
+      level: 'Intermediate',
+      language: 'English',
+      price: 599,
+      originalPrice: 3499,
+      currency: 'INR',
+      thumbnail: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=800&q=80',
+      previewVideoUrl: '/videos/gemini_generated_video_323b2790.mp4',
+      badge: 'Hot & New',
+      rating: 4.88,
+      reviewsCount: 2150,
+      studentsCount: 12100,
+      durationHours: 32,
+      lecturesCount: 22,
+      certificateAvailable: true,
+      published: true,
+      instructor: {
+        name: 'Alex Rivera',
+        title: 'Senior Staff Engineer & Tech Lead',
+        avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80',
+        bio: 'Full-stack engineering veteran with 10+ years at high-growth startups.',
+        rating: '4.91 Instructor Rating',
+        studentsCount: 28000
+      },
+      whatYouWillLearn: [
+        'Modern React 18 with hooks, state machines, and performant memoization',
+        'Secure Node.js & Express REST APIs with rate limiting and helmet',
+        'MongoDB schema modeling, indexing strategies, and aggregation pipelines',
+        'End-to-end payment gateway workflows with webhook reconciliation'
+      ],
+      requirements: ['Basic JavaScript knowledge'],
+      faqs: [{ question: 'Does this cover deployment?', answer: 'Yes, we cover VPS and cloud deployment.' }],
+      modules: [
+        {
+          _id: 'mod_m1',
+          title: 'Module 1: Production Architecture & Setup',
+          lessons: [
+            {
+              _id: 'les_m1_1',
+              title: '01. High-Performance MERN Architecture Overview',
+              duration: '16 min',
+              durationSec: 960,
+              videoUrl: '/videos/gemini_generated_video_323b2790.mp4',
+              isFreePreview: true,
+              summary: 'Architecture diagram, folder structure, and best conventions.'
+            },
+            {
+              _id: 'les_m1_2',
+              title: '02. Robust Auth with JWT & HttpOnly Cookies',
+              duration: '24 min',
+              durationSec: 1440,
+              videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+              isFreePreview: false,
+              summary: 'Bulletproof authentication design.'
+            }
+          ]
+        }
+      ]
+    },
+    {
+      _id: 'course_cloud_k8s',
+      slug: 'cloud-native-kubernetes-microservices',
+      title: 'Cloud Native Kubernetes & Microservices at Scale',
+      subtitle: 'Zero to hero with Docker containers, Helm charts, CI/CD pipelines, and AWS/GCP orchestration',
+      description: 'Master enterprise cloud infrastructure. Learn how to containerize distributed apps, manage Kubernetes clusters, set up zero-downtime canary deployments, and monitor with Prometheus & Grafana.',
+      category: 'Cloud & DevOps',
+      level: 'Advanced',
+      language: 'English',
+      price: 699,
+      originalPrice: 3999,
+      currency: 'INR',
+      thumbnail: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=800&q=80',
+      previewVideoUrl: '/videos/gemini_generated_video_323b2790.mp4',
+      badge: 'Highest Rated',
+      rating: 4.96,
+      reviewsCount: 1680,
+      studentsCount: 9400,
+      durationHours: 28,
+      lecturesCount: 20,
+      certificateAvailable: true,
+      published: true,
+      instructor: {
+        name: 'Marcus Vance',
+        title: 'Principal Cloud Architect',
+        avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=150&q=80',
+        bio: 'Ex-Google Cloud Solutions Architect, specializing in high-resilience systems.',
+        rating: '4.95 Instructor Rating',
+        studentsCount: 31000
+      },
+      whatYouWillLearn: [
+        'Dockerize complex multi-service apps with multi-stage builds',
+        'Configure Kubernetes Pods, Deployments, Services, and Ingress controllers',
+        'Automate CI/CD pipelines with GitHub Actions and GitOps ArgoCD'
+      ],
+      requirements: ['Basic Linux terminal commands and networking principles.'],
+      faqs: [{ question: 'Are cloud credits needed?', answer: 'We use Minikube and local k3s for free practice.' }],
+      modules: [
+        {
+          _id: 'mod_k1',
+          title: 'Module 1: Containerization with Docker & Podman',
+          lessons: [
+            {
+              _id: 'les_k1_1',
+              title: '01. Container Internals & Kernel Namespaces',
+              duration: '18 min',
+              durationSec: 1080,
+              videoUrl: '/videos/gemini_generated_video_323b2790.mp4',
+              isFreePreview: true,
+              summary: 'Understand cgroups, namespaces, and union file systems.'
+            }
+          ]
+        }
+      ]
+    },
+    {
+      _id: 'course_ui_ux',
+      slug: 'enterprise-ui-ux-design-systems',
+      title: 'Enterprise UI/UX Design System & Micro-Interactions',
+      subtitle: 'Design stunning user experiences, responsive layouts, Figma token libraries, and motion design',
+      description: 'Transform your design capability. Learn typography hierarchies, harmonious color palettes, micro-animations, accessible contrast ratios, and design-to-code component systems.',
+      category: 'UI/UX Design',
+      level: 'All Levels',
+      language: 'English',
+      price: 449,
+      originalPrice: 2499,
+      currency: 'INR',
+      thumbnail: 'https://images.unsplash.com/photo-1581291518857-4e27b48ff24e?auto=format&fit=crop&w=800&q=80',
+      previewVideoUrl: '/videos/gemini_generated_video_323b2790.mp4',
+      badge: 'Bestseller',
+      rating: 4.89,
+      reviewsCount: 2450,
+      studentsCount: 16300,
+      durationHours: 18,
+      lecturesCount: 16,
+      certificateAvailable: true,
+      published: true,
+      instructor: {
+        name: 'Sophia Laurent',
+        title: 'Design Director & UX Strategist',
+        avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80',
+        bio: 'Award-winning UX director with designs powering over 20 million daily users.',
+        rating: '4.92 Instructor Rating',
+        studentsCount: 35000
+      },
+      whatYouWillLearn: [
+        'Master Figma variables, auto-layout 5.0, and design token pipelines',
+        'Create interactive prototypes with fluid easing and physics-based motion',
+        'Conduct usability testing and data-driven UX audits'
+      ],
+      requirements: ['No prior design tools required; free Figma account is sufficient.'],
+      faqs: [{ question: 'Are Figma UI kits included?', answer: 'Yes, 5 complete commercial UI kits are included.' }],
+      modules: [
+        {
+          _id: 'mod_u1',
+          title: 'Module 1: Visual Hierarchy & Design Psychology',
+          lessons: [
+            {
+              _id: 'les_u1_1',
+              title: '01. The Anatomy of Modern High-Converting Web Pages',
+              duration: '15 min',
+              durationSec: 900,
+              videoUrl: '/videos/gemini_generated_video_323b2790.mp4',
+              isFreePreview: true,
+              summary: 'Color theory, spacing rhythm, and F-pattern eye scanning.'
+            }
+          ]
+        }
+      ]
+    },
+    {
+      _id: 'course_rag_llm',
+      slug: 'production-llm-engineering-rag',
+      title: 'Production LLM Engineering & Advanced RAG Pipelines',
+      subtitle: 'Build high-accuracy AI search and reasoning engines with vector embeddings, rerankers, and LangChain',
+      description: 'Master advanced Retrieval-Augmented Generation (RAG). Learn chunking strategies, hybrid vector & keyword retrieval, cross-encoder reranking, and evaluation with Ragas.',
+      category: 'AI & Agents',
+      level: 'Intermediate',
+      language: 'English',
+      price: 649,
+      originalPrice: 3799,
+      currency: 'INR',
+      thumbnail: 'https://images.unsplash.com/photo-1677442136019-21780ecad995?auto=format&fit=crop&w=800&q=80',
+      previewVideoUrl: '/videos/gemini_generated_video_323b2790.mp4',
+      badge: 'Hot & New',
+      rating: 4.93,
+      reviewsCount: 1890,
+      studentsCount: 11200,
+      durationHours: 22,
+      lecturesCount: 18,
+      certificateAvailable: true,
+      published: true,
+      instructor: {
+        name: 'Dr. Elena Vance',
+        title: 'Principal AI Architect',
+        avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=150&q=80',
+        bio: 'Leading AI systems researcher and enterprise trainer.',
+        rating: '4.98 Instructor Rating',
+        studentsCount: 45000
+      },
+      whatYouWillLearn: [
+        'Design semantic search pipelines with chunking and metadata filtering',
+        'Implement BM25 + Dense vector reciprocal rank fusion (RRF)',
+        'Guardrails for hallucinations, prompt injections, and data security'
+      ],
+      requirements: ['Basic Python or JavaScript API understanding.'],
+      faqs: [{ question: 'Are API credits needed?', answer: 'We include local open-source models with Ollama too.' }],
+      modules: [
+        {
+          _id: 'mod_r1',
+          title: 'Module 1: Vector Embeddings & Similarity Math',
+          lessons: [
+            {
+              _id: 'les_r1_1',
+              title: '01. Cosine Distance, Dot Products & Index Types',
+              duration: '16 min',
+              durationSec: 960,
+              videoUrl: '/videos/gemini_generated_video_323b2790.mp4',
+              isFreePreview: true,
+              summary: 'How embedding spaces work and vector distance comparisons.'
+            }
+          ]
+        }
+      ]
+    },
+    {
+      _id: 'course_cyber_sec',
+      slug: 'cybersecurity-defenses-zero-trust',
+      title: 'Cybersecurity Defenses: Zero Trust Architecture',
+      subtitle: 'Defend web applications against OWASP Top 10, ransomware, API attacks, and credential stuffing',
+      description: 'Protect modern cloud and web platforms. Learn identity federation, OAuth2/OIDC, mTLS, JWT token signing security, SQL injection defense, and enterprise threat auditing.',
+      category: 'Cyber Security',
+      level: 'All Levels',
+      language: 'English',
+      price: 549,
+      originalPrice: 2999,
+      currency: 'INR',
+      thumbnail: 'https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&w=800&q=80',
+      previewVideoUrl: '/videos/gemini_generated_video_323b2790.mp4',
+      badge: 'Featured',
+      rating: 4.87,
+      reviewsCount: 1420,
+      studentsCount: 8900,
+      durationHours: 20,
+      lecturesCount: 15,
+      certificateAvailable: true,
+      published: true,
+      instructor: {
+        name: 'David Thorne',
+        title: 'Chief Information Security Officer',
+        avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=150&q=80',
+        bio: '15+ years managing security operations centers and cloud defense.',
+        rating: '4.89 Instructor Rating',
+        studentsCount: 19000
+      },
+      whatYouWillLearn: [
+        'Secure APIs against OWASP Top 10 vulnerabilities',
+        'Implement multi-factor authentication (MFA) and OAuth2 security',
+        'Configure network firewalls, rate limits, and DDoS mitigation'
+      ],
+      requirements: ['Basic understanding of web protocols (HTTP, TCP, DNS).'],
+      faqs: [{ question: 'Does this prepare for security certifications?', answer: 'Yes, covers CompTIA Security+ concepts.' }],
+      modules: [
+        {
+          _id: 'mod_s1',
+          title: 'Module 1: Web Application Threat Vectors',
+          lessons: [
+            {
+              _id: 'les_s1_1',
+              title: '01. OWASP Top 10 Analysis & Hands-on Exploitation Defense',
+              duration: '19 min',
+              durationSec: 1140,
+              videoUrl: '/videos/gemini_generated_video_323b2790.mp4',
+              isFreePreview: true,
+              summary: 'Preventing XSS, CSRF, and broken access controls.'
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  enrollments: [
+    {
+      _id: 'enr_demo_01',
+      userId: 'user_student_01',
+      courseId: 'course_ai_agents',
+      paymentId: 'pay_demo_test_9981',
+      orderId: 'order_demo_12345',
+      amountPaid: 499,
+      invoiceNumber: 'INV-2026-0001',
+      status: 'active',
+      progress: {
+        completedLessons: ['les_01_01', 'les_01_02'],
+        lastWatchedLessonId: 'les_01_02',
+        percent: 28
+      },
+      certificate: {
+        certificateId: 'CERT-KF-2026-8841',
+        issuedAt: null,
+        eligible: false
+      },
+      enrolledAt: '2026-10-18T10:30:00.000Z'
+    }
+  ]
 };

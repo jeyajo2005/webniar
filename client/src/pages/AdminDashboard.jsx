@@ -25,7 +25,11 @@ import {
   CheckCircle2,
   AlertCircle,
   Mail,
-  Phone
+  Phone,
+  BookOpen,
+  Plus,
+  Trash2,
+  Edit
 } from 'lucide-react';
 import { api } from '../services/api.js';
 
@@ -52,6 +56,21 @@ export default function AdminDashboard({ onNavigate, onWebinarUpdated }) {
   const [saveSuccessMsg, setSaveSuccessMsg] = useState('');
   const [resendingId, setResendingId] = useState(null);
 
+  // Courses Management State
+  const [coursesList, setCoursesList] = useState([]);
+  const [enrollmentsList, setEnrollmentsList] = useState([]);
+  const [showCourseModal, setShowCourseModal] = useState(false);
+  const [newCourse, setNewCourse] = useState({
+    title: '',
+    category: 'AI & Agents',
+    price: 499,
+    originalPrice: 2999,
+    durationHours: 20,
+    instructorName: 'Dr. Elena Vance',
+    thumbnail: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80',
+    description: ''
+  });
+
   const loadDashboardData = async () => {
     setLoading(true);
     try {
@@ -66,10 +85,85 @@ export default function AdminDashboard({ onNavigate, onWebinarUpdated }) {
           setWebinarConfig(data.webinar);
         }
       }
+
+      // Fetch courses & course enrollments
+      const coursesRes = await api.getCourses({});
+      if (coursesRes.success) {
+        setCoursesList(coursesRes.courses || []);
+      }
+
+      const enrRes = await api.getAllEnrollmentsAdmin(adminToken);
+      if (enrRes.success) {
+        setEnrollmentsList(enrRes.enrollments || []);
+      }
     } catch (err) {
       console.error('Error fetching admin stats:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleCreateCourseSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const res = await api.createCourseAdmin({
+        title: newCourse.title,
+        category: newCourse.category,
+        price: Number(newCourse.price),
+        originalPrice: Number(newCourse.originalPrice),
+        durationHours: Number(newCourse.durationHours),
+        thumbnail: newCourse.thumbnail,
+        description: newCourse.description,
+        instructor: {
+          name: newCourse.instructorName,
+          title: 'Senior Instructor',
+          avatar: '/assets/female_presenter_blazer.jpg'
+        },
+        modules: [
+          {
+            title: 'Module 1: Core Fundamentals & Practical Setup',
+            lessons: [
+              {
+                title: '01. Architecture Overview & Introduction',
+                duration: '15 min',
+                videoUrl: '/videos/gemini_generated_video_323b2790.mp4',
+                isFreePreview: true
+              }
+            ]
+          }
+        ]
+      }, adminToken);
+
+      if (res.success) {
+        setShowCourseModal(false);
+        setNewCourse({
+          title: '',
+          category: 'AI & Agents',
+          price: 499,
+          originalPrice: 2999,
+          durationHours: 20,
+          instructorName: 'Dr. Elena Vance',
+          thumbnail: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80',
+          description: ''
+        });
+        loadDashboardData();
+        setSaveSuccessMsg('New course published to catalog successfully!');
+        setTimeout(() => setSaveSuccessMsg(''), 4000);
+      }
+    } catch (err) {
+      alert('Failed to create course: ' + err.message);
+    }
+  };
+
+  const handleDeleteCourse = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this course?')) return;
+    try {
+      const res = await api.deleteCourseAdmin(id, adminToken);
+      if (res.success) {
+        loadDashboardData();
+      }
+    } catch (err) {
+      alert('Delete failed: ' + err.message);
     }
   };
 
@@ -423,6 +517,7 @@ export default function AdminDashboard({ onNavigate, onWebinarUpdated }) {
         }}>
           {[
             { id: 'overview', label: 'Registrations & Attendees', icon: Users },
+            { id: 'courses', label: 'Courses & Curriculum', icon: BookOpen },
             { id: 'webinar', label: 'Webinar & Landing Page Settings', icon: Settings },
             { id: 'invoices', label: 'Invoices & Taxes', icon: FileText },
             { id: 'logs', label: 'Delivery Logs & Gateways', icon: MessageSquare }
@@ -875,6 +970,287 @@ export default function AdminDashboard({ onNavigate, onWebinarUpdated }) {
                 ))}
               </tbody>
             </table>
+          </div>
+        )}
+        {/* TAB: COURSES MANAGEMENT & ENROLLMENTS */}
+        {activeTab === 'courses' && (
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+              <div>
+                <h3 style={{ fontSize: 20, fontWeight: 800, color: '#0f172a' }}>Online Course Management</h3>
+                <p style={{ color: 'var(--text-muted)', fontSize: 13, marginTop: 2 }}>
+                  Manage course prices, curriculum modules, preview videos, and enrolled students.
+                </p>
+              </div>
+              <button
+                onClick={() => setShowCourseModal(true)}
+                style={{
+                  background: 'linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)',
+                  color: '#ffffff',
+                  border: 'none',
+                  padding: '10px 18px',
+                  borderRadius: 8,
+                  fontSize: 13,
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 8,
+                  boxShadow: '0 4px 12px rgba(79, 70, 229, 0.3)'
+                }}
+              >
+                <Plus size={16} />
+                <span>Create New Course</span>
+              </button>
+            </div>
+
+            {/* Courses Table */}
+            <div className="glass-card" style={{ padding: 24, textAlign: 'left', marginBottom: 32 }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+                <thead>
+                  <tr style={{ background: '#f8fafc', borderBottom: '2px solid #e2e8f0', color: '#475569' }}>
+                    <th style={{ padding: 12, textAlign: 'left' }}>Course</th>
+                    <th style={{ padding: 12, textAlign: 'left' }}>Category</th>
+                    <th style={{ padding: 12, textAlign: 'left' }}>Price</th>
+                    <th style={{ padding: 12, textAlign: 'center' }}>Students</th>
+                    <th style={{ padding: 12, textAlign: 'center' }}>Rating</th>
+                    <th style={{ padding: 12, textAlign: 'right' }}>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {coursesList.map((c) => (
+                    <tr key={c._id} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                      <td style={{ padding: 12, display: 'flex', alignItems: 'center', gap: 12 }}>
+                        <img
+                          src={c.thumbnail}
+                          alt={c.title}
+                          style={{ width: 48, height: 32, borderRadius: 6, objectFit: 'cover' }}
+                        />
+                        <div>
+                          <p style={{ fontWeight: 700, color: '#0f172a' }}>{c.title}</p>
+                          <span style={{ fontSize: 11, color: '#64748b' }}>Instructor: {c.instructor?.name || 'Dr. Elena Vance'}</span>
+                        </div>
+                      </td>
+                      <td style={{ padding: 12 }}>
+                        <span style={{ background: '#eff6ff', color: '#2563eb', padding: '3px 8px', borderRadius: 4, fontWeight: 700, fontSize: 11 }}>
+                          {c.category}
+                        </span>
+                      </td>
+                      <td style={{ padding: 12, fontWeight: 700, color: '#0f172a' }}>
+                        ₹{c.price} <span style={{ fontSize: 11, color: '#94a3b8', textDecoration: 'line-through' }}>₹{c.originalPrice || 2999}</span>
+                      </td>
+                      <td style={{ padding: 12, textAlign: 'center', fontWeight: 600, color: '#334155' }}>
+                        {(c.studentsCount || 0).toLocaleString()}
+                      </td>
+                      <td style={{ padding: 12, textAlign: 'center', color: '#b45309', fontWeight: 700 }}>
+                        ★ {c.rating || 4.9}
+                      </td>
+                      <td style={{ padding: 12, textAlign: 'right' }}>
+                        <button
+                          onClick={() => handleDeleteCourse(c._id)}
+                          style={{ background: 'none', border: 'none', color: '#dc2626', cursor: 'pointer', padding: 4 }}
+                          title="Delete Course"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Course Enrollments Table */}
+            <div className="glass-card" style={{ padding: 24, textAlign: 'left' }}>
+              <h3 style={{ fontSize: 18, fontWeight: 800, color: '#0f172a', marginBottom: 6 }}>
+                Recent Student Enrollments ({enrollmentsList.length})
+              </h3>
+              <p style={{ color: 'var(--text-muted)', fontSize: 13, marginBottom: 16 }}>
+                Real-time verified student enrollments across all online courses.
+              </p>
+
+              {enrollmentsList.length === 0 ? (
+                <p style={{ fontSize: 13, color: '#64748b' }}>No student enrollments recorded yet.</p>
+              ) : (
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+                  <thead>
+                    <tr style={{ background: '#f8fafc', borderBottom: '2px solid #e2e8f0', color: '#475569' }}>
+                      <th style={{ padding: 12, textAlign: 'left' }}>Student Name</th>
+                      <th style={{ padding: 12, textAlign: 'left' }}>Enrolled Course</th>
+                      <th style={{ padding: 12, textAlign: 'left' }}>Invoice #</th>
+                      <th style={{ padding: 12, textAlign: 'left' }}>Amount</th>
+                      <th style={{ padding: 12, textAlign: 'center' }}>Progress</th>
+                      <th style={{ padding: 12, textAlign: 'right' }}>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {enrollmentsList.map((enr) => (
+                      <tr key={enr._id} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                        <td style={{ padding: 12, fontWeight: 700, color: '#0f172a' }}>
+                          {enr.studentName || 'Student'}
+                          <span style={{ display: 'block', fontSize: 11, fontWeight: 400, color: '#64748b' }}>
+                            {enr.studentEmail || ''}
+                          </span>
+                        </td>
+                        <td style={{ padding: 12, color: '#334155' }}>
+                          {enr.courseTitle || 'Online Course'}
+                        </td>
+                        <td style={{ padding: 12, fontFamily: 'monospace', color: '#4f46e5' }}>
+                          {enr.invoiceNumber || 'INV-2026-CRS'}
+                        </td>
+                        <td style={{ padding: 12, fontWeight: 700 }}>
+                          ₹{enr.amountPaid || 499}
+                        </td>
+                        <td style={{ padding: 12, textAlign: 'center' }}>
+                          <span style={{ fontWeight: 700, color: enr.progress?.percent === 100 ? '#16a34a' : '#4f46e5' }}>
+                            {enr.progress?.percent || 0}%
+                          </span>
+                        </td>
+                        <td style={{ padding: 12, textAlign: 'right' }}>
+                          <span style={{ background: '#dcfce7', color: '#166534', padding: '3px 8px', borderRadius: 4, fontWeight: 700, fontSize: 11 }}>
+                            ACTIVE
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+
+            {/* CREATE COURSE MODAL */}
+            {showCourseModal && (
+              <div style={{
+                position: 'fixed',
+                inset: 0,
+                zIndex: 10000,
+                background: 'rgba(15, 23, 42, 0.75)',
+                backdropFilter: 'blur(8px)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: 20
+              }}>
+                <div style={{
+                  background: '#ffffff',
+                  width: '100%',
+                  maxWidth: 520,
+                  borderRadius: 16,
+                  padding: 28,
+                  position: 'relative'
+                }}>
+                  <h3 style={{ fontSize: 18, fontWeight: 800, color: '#0f172a', marginBottom: 16 }}>
+                    Create & Publish New Course
+                  </h3>
+
+                  <form onSubmit={handleCreateCourseSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                    <div>
+                      <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: '#334155', marginBottom: 4 }}>Course Title</label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="e.g. Generative AI Architecture"
+                        value={newCourse.title}
+                        onChange={(e) => setNewCourse({ ...newCourse, title: e.target.value })}
+                        style={{ width: '100%', padding: '9px 12px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 13 }}
+                      />
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                      <div>
+                        <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: '#334155', marginBottom: 4 }}>Category</label>
+                        <select
+                          value={newCourse.category}
+                          onChange={(e) => setNewCourse({ ...newCourse, category: e.target.value })}
+                          style={{ width: '100%', padding: '9px 12px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 13 }}
+                        >
+                          <option value="AI & Agents">AI & Agents</option>
+                          <option value="Full-Stack Development">Full-Stack Development</option>
+                          <option value="Cloud & DevOps">Cloud & DevOps</option>
+                          <option value="UI/UX Design">UI/UX Design</option>
+                          <option value="Cyber Security">Cyber Security</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: '#334155', marginBottom: 4 }}>Price (INR)</label>
+                        <input
+                          type="number"
+                          required
+                          value={newCourse.price}
+                          onChange={(e) => setNewCourse({ ...newCourse, price: e.target.value })}
+                          style={{ width: '100%', padding: '9px 12px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 13 }}
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: '#334155', marginBottom: 4 }}>Instructor Name</label>
+                      <input
+                        type="text"
+                        value={newCourse.instructorName}
+                        onChange={(e) => setNewCourse({ ...newCourse, instructorName: e.target.value })}
+                        style={{ width: '100%', padding: '9px 12px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 13 }}
+                      />
+                    </div>
+
+                    <div>
+                      <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: '#334155', marginBottom: 4 }}>Thumbnail Image URL</label>
+                      <input
+                        type="url"
+                        value={newCourse.thumbnail}
+                        onChange={(e) => setNewCourse({ ...newCourse, thumbnail: e.target.value })}
+                        style={{ width: '100%', padding: '9px 12px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 13 }}
+                      />
+                    </div>
+
+                    <div>
+                      <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: '#334155', marginBottom: 4 }}>Short Description</label>
+                      <textarea
+                        rows={2}
+                        value={newCourse.description}
+                        onChange={(e) => setNewCourse({ ...newCourse, description: e.target.value })}
+                        style={{ width: '100%', padding: '9px 12px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 13 }}
+                      />
+                    </div>
+
+                    <div style={{ display: 'flex', gap: 10, marginTop: 12 }}>
+                      <button
+                        type="submit"
+                        style={{
+                          flex: 1,
+                          background: 'linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)',
+                          color: '#ffffff',
+                          border: 'none',
+                          padding: '11px',
+                          borderRadius: 8,
+                          fontWeight: 700,
+                          fontSize: 14,
+                          cursor: 'pointer'
+                        }}
+                      >
+                        Publish Course
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setShowCourseModal(false)}
+                        style={{
+                          background: '#f1f5f9',
+                          border: '1px solid #cbd5e1',
+                          color: '#334155',
+                          padding: '11px 18px',
+                          borderRadius: 8,
+                          fontWeight: 600,
+                          cursor: 'pointer'
+                        }}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>

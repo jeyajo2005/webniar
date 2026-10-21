@@ -3,6 +3,9 @@ import RegistrationModel from '../models/Registration.js';
 import PaymentModel from '../models/Payment.js';
 import WebinarModel from '../models/Webinar.js';
 import InvoiceModel from '../models/Invoice.js';
+import CourseModel from '../models/Course.js';
+import EnrollmentModel from '../models/Enrollment.js';
+import UserModel from '../models/User.js';
 import { generateInvoice } from '../services/invoiceService.js';
 import { sendConfirmationEmail, sendInvoiceEmail } from '../services/emailService.js';
 import { sendWhatsAppConfirmation } from '../services/whatsappService.js';
@@ -176,6 +179,208 @@ export const verifyPayment = async (req, res, next) => {
       payment,
       invoice,
       registration: reg
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// COURSE CHECKOUT: Create Razorpay Order for Course
+export const createCourseOrder = async (req, res, next) => {
+  try {
+    const { courseId, amount, currency = 'INR' } = req.body;
+    const course = await CourseModel.findById(courseId);
+
+    if (!course) {
+      return res.status(404).json({ success: false, message: 'Course not found.' });
+    }
+
+    const payableAmount = amount !== undefined ? Number(amount) : Number(course.price);
+    const receipt = `rec_crs_${Date.now().toString().slice(-6)}`;
+
+    const order = await createRazorpayOrder({
+      amount: payableAmount,
+      currency,
+      receipt,
+      notes: {
+        courseId: course._id,
+        courseTitle: course.title,
+        userId: req.user?._id || 'guest_checkout'
+      }
+    });
+
+    res.status(200).json({
+      success: true,
+      orderId: order.id,
+      amount: order.amount,
+      currency: order.currency,
+      keyId: process.env.RAZORPAY_KEY_ID || 'rzp_test_sampleKey123',
+      isSimulated: order.isSimulated,
+      course: {
+        _id: course._id,
+        title: course.title,
+        price: payableAmount
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// COURSE CHECKOUT: Verify Signature & Complete Course Enrollment
+export const verifyCoursePayment = async (req, res, next) => {
+  try {
+    const {
+      courseId,
+      orderId,
+      paymentId,
+      signature,
+      amount,
+      currency = 'INR',
+      method = 'UPI',
+      customer = {}
+    } = req.body;
+
+    if (!orderId || !paymentId || !courseId) {
+      return res.status(400).json({ success: false, message: 'Missing courseId, orderId, or paymentId.' });
+    }
+
+    // Server-side Signature Verification
+    const verification = verifyRazorpayPayment({ orderId, paymentId, signature });
+    if (!verification.verified) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid payment signature. Payment verification failed on server.'
+      });
+    }
+
+    const course = await CourseModel.findById(courseId);
+    if (!course) {
+      return res.status(404).json({ success: false, message: 'Course not found.' });
+    }
+
+    // Resolve User: from token or customer email
+    let user = req.user;
+    const studentEmail = customer.email || user?.email || 'student@example.com';
+    const studentName = customer.name || user?.name || 'Enrolled Student';
+    const studentPhone = customer.phone || user?.phone || '';
+
+    if (!user) {
+      user = await UserModel.findOne({ email: studentEmail });
+      if (!user) {
+        // Auto-create student user account so they can log in
+        user = await UserModel.create({
+          name: studentName,
+          email: studentEmail,
+          password: 'Password@' + Date.now().toString().slice(-4),
+          phone: studentPhone,
+          role: 'student'
+        });
+      }
+    }
+
+    // Idempotency: check if enrollment already recorded for this user & course
+    let existingEnrollment = await EnrollmentModel.findOne({
+      userId: user._id,
+      courseId: course._id,
+      status: 'active'
+    });
+
+    if (existingEnrollment) {
+      const existingInvoice = await InvoiceModel.findOne({ paymentId });
+      return res.status(200).json({
+        success: true,
+        message: 'Course already enrolled.',
+        enrollment: existingEnrollment,
+        invoice: existingInvoice,
+        course
+      });
+    }
+
+    const payableAmount = amount ? Number(amount) : Number(course.price);
+
+    // Generate GST Tax Invoice
+    const invoice = await generateInvoice({
+      registrationId: `ENR-${Date.now().toString().slice(-6)}`,
+      paymentId,
+      customer: {
+        name: studentName,
+        email: studentEmail,
+        phone: studentPhone
+      },
+      amount: payableAmount,
+      currency,
+      description: `Course Enrollment: ${course.title}`
+    });
+
+    // Save Payment record in database
+    const payment = await PaymentModel.create({
+      registrationId: user._id,
+      orderId,
+      paymentId,
+      signature: signature || 'simulated_valid_sig',
+      amount: payableAmount,
+      currency,
+      status: 'captured',
+      method,
+      invoiceNumber: invoice.invoiceNumber
+    });
+
+    // Create Enrollment Record
+    const enrollment = await EnrollmentModel.create({
+      userId: user._id,
+      courseId: course._id,
+      paymentId,
+      orderId,
+      amountPaid: payableAmount,
+      invoiceNumber: invoice.invoiceNumber,
+      status: 'active',
+      progress: {
+        completedLessons: [],
+        lastWatchedLessonId: course.modules?.[0]?.lessons?.[0]?._id || null,
+        percent: 0
+      },
+      certificate: {
+        certificateId: 'CERT-KF-' + Math.random().toString(36).substring(2, 8).toUpperCase(),
+        eligible: false
+      }
+    });
+
+    // Update course enrolled students count
+    await CourseModel.findByIdAndUpdate(course._id, {
+      studentsCount: (course.studentsCount || 0) + 1
+    });
+
+    // Send Confirmation Email
+    try {
+      await sendConfirmationEmail({
+        to: studentEmail,
+        name: studentName,
+        webinarTitle: course.title,
+        registrationId: enrollment._id,
+        amountPaid: payableAmount,
+        date: 'Instant Access (Lifetime)',
+        time: 'On-Demand Streaming',
+        timezone: '24/7 Access',
+        webinarLink: `${process.env.CLIENT_URL || 'http://localhost:5173'}`,
+        whatsappCommunityUrl: 'https://chat.whatsapp.com/demoWebinarFlowVip2026',
+        invoiceNumber: invoice.invoiceNumber,
+        invoicePdfUrl: `${process.env.API_URL || 'http://localhost:5000'}/api/invoices/${invoice.invoiceNumber}/pdf`
+      });
+    } catch (err) {
+      console.warn('[Course Confirmation Email Warning]:', err.message);
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Payment verified successfully! Welcome to your course.',
+      enrollment,
+      invoice,
+      payment,
+      course: {
+        _id: course._id,
+        title: course.title
+      }
     });
   } catch (error) {
     next(error);

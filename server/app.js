@@ -5,6 +5,9 @@ import paymentRoutes from './routes/paymentRoutes.js';
 import invoiceRoutes from './routes/invoiceRoutes.js';
 import webhookRoutes from './routes/webhookRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
+import authRoutes from './routes/authRoutes.js';
+import courseRoutes from './routes/courseRoutes.js';
+import enrollmentRoutes from './routes/enrollmentRoutes.js';
 import WebinarModel from './models/Webinar.js';
 import { getDBStatus } from './config/db.js';
 import { notFoundHandler, errorHandler } from './middleware/errorMiddleware.js';
@@ -27,7 +30,7 @@ app.get('/api/health', (req, res) => {
     status: 'healthy',
     timestamp: new Date().toISOString(),
     database: getDBStatus(),
-    version: '1.0.0'
+    version: '2.0.0 (LMS + Webinar Platform)'
   });
 });
 
@@ -42,6 +45,9 @@ app.get('/api/webinar', async (req, res, next) => {
 });
 
 // Mount Routes
+app.use('/api/auth', authRoutes);
+app.use('/api/courses', courseRoutes);
+app.use('/api/enrollments', enrollmentRoutes);
 app.use('/api/registrations', registrationRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/invoices', invoiceRoutes);

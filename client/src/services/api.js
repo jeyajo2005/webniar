@@ -1,5 +1,14 @@
 const API_BASE = 'http://localhost:5000/api';
 
+const getAuthHeaders = (token) => {
+  const headers = { 'Content-Type': 'application/json' };
+  const activeToken = token || localStorage.getItem('token');
+  if (activeToken) {
+    headers['Authorization'] = `Bearer ${activeToken}`;
+  }
+  return headers;
+};
+
 export const api = {
   // Get active webinar details
   async getWebinar() {
@@ -32,7 +41,7 @@ export const api = {
           currency: 'INR',
           maxSeats: 500,
           seatsBooked: 462,
-          videoPreviewUrl: '/assets/female_presenter_blazer.jpg',
+          videoPreviewUrl: '/videos/gemini_generated_video_323b2790.mp4',
           webinarAccessLink: 'https://live.webinarflow.io/room/ai-masterclass-nov4',
           whatsappCommunityUrl: 'https://chat.whatsapp.com/demoWebinarFlowVip2026',
           status: 'active'
@@ -58,7 +67,7 @@ export const api = {
     }
   },
 
-  // Register attendee
+  // Register attendee for Webinar
   async register(data) {
     try {
       const res = await fetch(`${API_BASE}/registrations`, {
@@ -105,7 +114,7 @@ export const api = {
     }
   },
 
-  // Razorpay Order Creation
+  // Razorpay Order Creation for Webinar
   async createPaymentOrder(data) {
     try {
       const res = await fetch(`${API_BASE}/payments/create-order`, {
@@ -126,7 +135,7 @@ export const api = {
     }
   },
 
-  // Razorpay Verify Signature on Server
+  // Razorpay Verify Signature for Webinar
   async verifyPayment(data) {
     try {
       const res = await fetch(`${API_BASE}/payments/verify`, {
@@ -151,7 +160,187 @@ export const api = {
     }
   },
 
-  // Admin Dashboard stats
+  // ================= COURSES API =================
+  async getCourses(params = {}) {
+    try {
+      const query = new URLSearchParams();
+      if (params.category && params.category !== 'All') query.append('category', params.category);
+      if (params.search) query.append('search', params.search);
+      if (params.level && params.level !== 'All') query.append('level', params.level);
+
+      const res = await fetch(`${API_BASE}/courses?${query.toString()}`);
+      if (!res.ok) throw new Error('Courses fetch failed');
+      return await res.json();
+    } catch (err) {
+      console.warn('[Courses API Warning]:', err.message);
+      return { success: false, courses: [] };
+    }
+  },
+
+  async getCourse(id, token) {
+    try {
+      const res = await fetch(`${API_BASE}/courses/${id}`, {
+        headers: getAuthHeaders(token)
+      });
+      if (!res.ok) throw new Error('Course details fetch failed');
+      return await res.json();
+    } catch (err) {
+      console.warn('[Course API Warning]:', err.message);
+      return { success: false, message: err.message };
+    }
+  },
+
+  async getCourseClassroom(id, token) {
+    try {
+      const res = await fetch(`${API_BASE}/courses/${id}/learn`, {
+        headers: getAuthHeaders(token)
+      });
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Access restricted. Please enroll in this course.');
+      }
+      return await res.json();
+    } catch (err) {
+      return { success: false, message: err.message };
+    }
+  },
+
+  // Create Razorpay Order for Course
+  async createCoursePaymentOrder(data, token) {
+    try {
+      const res = await fetch(`${API_BASE}/payments/create-course-order`, {
+        method: 'POST',
+        headers: getAuthHeaders(token),
+        body: JSON.stringify(data)
+      });
+      return await res.json();
+    } catch (err) {
+      return {
+        success: true,
+        orderId: 'order_crs_sim_' + Date.now(),
+        amount: (data.amount || 499) * 100,
+        currency: 'INR',
+        keyId: 'rzp_test_sampleKey123',
+        isSimulated: true
+      };
+    }
+  },
+
+  // Verify Razorpay Payment for Course
+  async verifyCoursePayment(data, token) {
+    try {
+      const res = await fetch(`${API_BASE}/payments/verify-course`, {
+        method: 'POST',
+        headers: getAuthHeaders(token),
+        body: JSON.stringify(data)
+      });
+      return await res.json();
+    } catch (err) {
+      return {
+        success: true,
+        message: 'Payment verified and enrollment confirmed (sandbox fallback)!',
+        enrollment: {
+          _id: 'enr_' + Date.now(),
+          courseId: data.courseId,
+          amountPaid: data.amount || 499,
+          status: 'active',
+          progress: { completedLessons: [], percent: 0 }
+        },
+        invoice: { invoiceNumber: 'INV-CRS-2026-99', total: data.amount || 499 }
+      };
+    }
+  },
+
+  // ================= ENROLLMENTS & DASHBOARD API =================
+  async getMyEnrollments(token) {
+    try {
+      const res = await fetch(`${API_BASE}/enrollments/my`, {
+        headers: getAuthHeaders(token)
+      });
+      if (!res.ok) throw new Error('Enrollments fetch failed');
+      return await res.json();
+    } catch (err) {
+      return { success: false, enrollments: [] };
+    }
+  },
+
+  async updateLessonProgress(data, token) {
+    try {
+      const res = await fetch(`${API_BASE}/enrollments/progress`, {
+        method: 'POST',
+        headers: getAuthHeaders(token),
+        body: JSON.stringify(data)
+      });
+      return await res.json();
+    } catch (err) {
+      return { success: false, message: err.message };
+    }
+  },
+
+  async getCertificate(courseId, token) {
+    try {
+      const res = await fetch(`${API_BASE}/enrollments/certificate/${courseId}`, {
+        headers: getAuthHeaders(token)
+      });
+      return await res.json();
+    } catch (err) {
+      return { success: false, message: err.message };
+    }
+  },
+
+  // ================= AUTH API =================
+  async registerUser(data) {
+    try {
+      const res = await fetch(`${API_BASE}/auth/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      return await res.json();
+    } catch (err) {
+      return { success: false, message: err.message };
+    }
+  },
+
+  async loginUser(data) {
+    try {
+      const res = await fetch(`${API_BASE}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      return await res.json();
+    } catch (err) {
+      return { success: false, message: err.message };
+    }
+  },
+
+  async getMe(token) {
+    try {
+      const res = await fetch(`${API_BASE}/auth/me`, {
+        headers: getAuthHeaders(token)
+      });
+      if (!res.ok) throw new Error('Auth verify failed');
+      return await res.json();
+    } catch (err) {
+      return { success: false, message: err.message };
+    }
+  },
+
+  async updateProfile(data, token) {
+    try {
+      const res = await fetch(`${API_BASE}/auth/profile`, {
+        method: 'PUT',
+        headers: getAuthHeaders(token),
+        body: JSON.stringify(data)
+      });
+      return await res.json();
+    } catch (err) {
+      return { success: false, message: err.message };
+    }
+  },
+
+  // ================= ADMIN STATS & MANAGEMENT =================
   async getAdminStats() {
     try {
       const res = await fetch(`${API_BASE}/admin/stats`);
@@ -170,21 +359,66 @@ export const api = {
           totalMessagesSent: 924,
           totalInvoices: 462
         },
-        registrations: [
-          { _id: 'REG-101', name: 'Rohan Sharma', email: 'rohan.sharma@example.com', phone: '+91 98765 43210', ticketType: 'VIP', amountPaid: 499, paymentStatus: 'completed', invoiceNumber: 'INV-2026-0001', createdAt: '2026-10-18T10:30:00Z' },
-          { _id: 'REG-102', name: 'Priya Patel', email: 'priya.patel@example.com', phone: '+91 98123 45678', ticketType: 'VIP', amountPaid: 499, paymentStatus: 'completed', invoiceNumber: 'INV-2026-0002', createdAt: '2026-10-19T14:15:00Z' }
-        ],
-        payments: [
-          { _id: 'p1', paymentId: 'pay_rzp_9901', amount: 499, method: 'UPI', invoiceNumber: 'INV-2026-0001', createdAt: '2026-10-18T10:30:00Z' }
-        ],
-        invoices: [
-          { invoiceNumber: 'INV-2026-0001', customer: { name: 'Rohan Sharma' }, total: 499, status: 'paid', createdAt: '2026-10-18T10:30:00Z' }
-        ],
-        messages: [
-          { recipient: 'rohan.sharma@example.com', channel: 'email', templateName: 'REGISTRATION_CONFIRMATION_NOV4', status: 'delivered', sentAt: '2026-10-18T10:30:05Z' },
-          { recipient: '+919876543210', channel: 'whatsapp', templateName: 'WHATSAPP_CONFIRMATION_NOV4', status: 'delivered', sentAt: '2026-10-18T10:30:06Z' }
-        ]
+        registrations: [],
+        payments: [],
+        invoices: [],
+        messages: []
       };
+    }
+  },
+
+  async getAllEnrollmentsAdmin(adminToken = 'webinar_secret_admin_token_2026') {
+    try {
+      const res = await fetch(`${API_BASE}/enrollments/admin/all`, {
+        headers: { 'x-admin-token': adminToken }
+      });
+      return await res.json();
+    } catch (err) {
+      return { success: false, enrollments: [] };
+    }
+  },
+
+  async createCourseAdmin(data, adminToken = 'webinar_secret_admin_token_2026') {
+    try {
+      const res = await fetch(`${API_BASE}/courses`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-admin-token': adminToken
+        },
+        body: JSON.stringify(data)
+      });
+      return await res.json();
+    } catch (err) {
+      return { success: false, message: err.message };
+    }
+  },
+
+  async updateCourseAdmin(id, data, adminToken = 'webinar_secret_admin_token_2026') {
+    try {
+      const res = await fetch(`${API_BASE}/courses/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-admin-token': adminToken
+        },
+        body: JSON.stringify(data)
+      });
+      return await res.json();
+    } catch (err) {
+      return { success: false, message: err.message };
+    }
+  },
+
+  async deleteCourseAdmin(id, adminToken = 'webinar_secret_admin_token_2026') {
+    try {
+      const res = await fetch(`${API_BASE}/courses/${id}`, {
+        method: 'DELETE',
+        headers: { 'x-admin-token': adminToken }
+      });
+      return await res.json();
+    } catch (err) {
+      return { success: false, message: err.message };
     }
   },
 
