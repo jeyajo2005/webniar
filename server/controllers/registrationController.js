@@ -5,51 +5,74 @@ import { sendWhatsAppConfirmation } from '../services/whatsappService.js';
 
 export const registerAttendee = async (req, res, next) => {
   try {
-    const { name, email, phone, webinarId, ticketType = 'VIP', amount } = req.body;
+    const { name, email, phone, courseTitle = 'Kaira Professional Course', amount = 1 } = req.body;
 
     if (!name || !email || !phone) {
-      return res.status(400).json({ success: false, message: 'Name, email, and phone number are required.' });
+      return res.status(400).json({ success: false, message: 'Full name, email address, and phone number are required.' });
     }
 
-    // Find active webinar
-    const webinar = (await WebinarModel.find())[0];
-    const fee = amount || (webinar ? webinar.vipPrice : 499);
+    const trimmedName = name.trim();
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanPhone = phone.replace(/[\s-]/g, '');
 
-    // Check for existing registration
-    let existing = await RegistrationModel.findOne({ email: email.toLowerCase() });
+    if (trimmedName.length < 2) {
+      return res.status(400).json({ success: false, message: 'Please enter a valid full name (minimum 2 characters).' });
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(cleanEmail)) {
+      return res.status(400).json({ success: false, message: 'Please enter a valid email address.' });
+    }
+
+    if (!/^\+?\d{10,13}$/.test(cleanPhone)) {
+      return res.status(400).json({ success: false, message: 'Please enter a valid 10-digit mobile number.' });
+    }
+
+    const fee = Number(amount) || 1; // Default ₹1
+
+    // Check for existing registration to prevent accidental duplicate registration
+    let existing = await RegistrationModel.findOne({ email: cleanEmail });
+    if (!existing) {
+      existing = await RegistrationModel.findOne({ phone: cleanPhone });
+    }
+
     if (existing) {
+      if (existing.paymentStatus === 'completed' || existing.paymentStatus === 'Paid') {
+        return res.status(200).json({
+          success: true,
+          message: 'You have already registered and completed payment for Kaira Course!',
+          registration: existing,
+          alreadyPaid: true
+        });
+      }
+
+      // Existing pending registration: return existing record so user can complete payment
       return res.status(200).json({
         success: true,
-        message: 'Existing registration found.',
+        message: 'Existing registration found. Proceed to complete your ₹1 payment.',
         registration: existing,
         alreadyRegistered: true
       });
     }
 
     const registration = await RegistrationModel.create({
-      name,
-      email: email.toLowerCase(),
-      phone,
-      webinarId: webinarId || 'webinar_live_01',
+      name: trimmedName,
+      email: cleanEmail,
+      phone: cleanPhone,
+      webinarId: 'kaira_course_01',
       ticketType: 'VIP',
       amountPaid: fee,
       paymentStatus: 'pending',
       attendanceStatus: 'registered',
+      itemTitle: courseTitle,
       calendarAdded: false,
       whatsappNotified: false,
       emailNotified: false
     });
 
-    // Update seat count
-    if (webinar && webinar._id) {
-      await WebinarModel.findByIdAndUpdate(webinar._id, {
-        seatsBooked: (webinar.seatsBooked || 0) + 1
-      });
-    }
-
     res.status(201).json({
       success: true,
-      message: 'Registration initialized successfully.',
+      message: 'Registration created successfully. Please complete the ₹1 payment.',
       registration
     });
   } catch (error) {

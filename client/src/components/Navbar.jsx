@@ -1,3 +1,4 @@
+import { FaReact } from 'react-icons/fa';
 import React, { useState } from 'react';
 import { 
   Search, 
@@ -32,7 +33,7 @@ export default function Navbar({
   const handleSearchSubmit = (e) => {
     e.preventDefault();
     if (onSearch) onSearch(searchQuery);
-    if (currentPage !== 'landing') onNavigate('landing');
+    onNavigate('courses');
   };
 
   return (
@@ -52,147 +53,84 @@ export default function Navbar({
           justifyContent: 'space-between',
           gap: 20
         }}>
-          {/* 1. Left: Brand Logo & Navigation */}
+          {/* 1. Left: Brand Heading "Kaira" & Navigation */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
-            {/* Kaira Logo matching Image 1: ● kaira */}
-            <div 
+            <button
               onClick={() => onNavigate('landing')}
               style={{
-                display: 'flex',
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                padding: '4px 0',
+                display: 'inline-flex',
                 alignItems: 'center',
-                gap: 8,
-                cursor: 'pointer'
+                textDecoration: 'none'
               }}
+              title="Kaira Academy"
             >
-              <span style={{
-                width: 14,
-                height: 14,
-                borderRadius: '50%',
-                background: '#1d4ed8',
-                display: 'inline-block',
-                boxShadow: '0 2px 8px rgba(29, 78, 216, 0.4)'
-              }} />
               <span style={{
                 fontSize: 26,
                 fontWeight: 900,
-                color: '#1d4ed8',
-                letterSpacing: '-0.035em',
-                fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+                color: '#0056D2',
+                letterSpacing: '-0.03em',
+                fontFamily: 'inherit'
               }}>
-                kaira
+                Kaira
               </span>
-            </div>
+            </button>
 
-            {/* Desktop Navigation Links */}
-            <nav style={{ display: 'flex', alignItems: 'center', gap: 24, marginLeft: 16 }} className="desktop-nav">
+            {/* Desktop Navigation Links: Home and Courses */}
+            <nav style={{ display: 'flex', alignItems: 'center', gap: 12 }} className="desktop-nav">
               <button
                 onClick={() => onNavigate('landing')}
                 style={{
                   background: 'none',
                   border: 'none',
-                  fontSize: 14,
-                  fontWeight: currentPage === 'landing' ? 700 : 500,
+                  fontSize: 15,
+                  fontWeight: currentPage === 'landing' ? 700 : 600,
                   color: currentPage === 'landing' ? '#1d4ed8' : '#475569',
                   cursor: 'pointer',
-                  padding: '6px 8px'
+                  padding: '6px 12px',
+                  borderRadius: 8,
+                  transition: 'all 0.15s ease'
                 }}
+                onMouseEnter={(e) => { e.currentTarget.style.color = '#1d4ed8'; }}
+                onMouseLeave={(e) => { if (currentPage !== 'landing') e.currentTarget.style.color = '#475569'; }}
               >
                 Home
               </button>
 
               <button
-                onClick={() => {
-                  if (currentPage !== 'landing') onNavigate('landing');
-                  setTimeout(() => {
-                    const el = document.getElementById('featured-courses-section');
-                    if (el) el.scrollIntoView({ behavior: 'smooth' });
-                  }, 100);
-                }}
+                onClick={() => onNavigate('courses')}
                 style={{
-                  background: 'none',
-                  border: 'none',
-                  fontSize: 14,
-                  fontWeight: 500,
-                  color: '#475569',
+                  background: currentPage === 'courses' ? '#eff6ff' : 'none',
+                  border: currentPage === 'courses' ? '1px solid #bfdbfe' : 'none',
+                  fontSize: 15,
+                  fontWeight: currentPage === 'courses' ? 800 : 600,
+                  color: currentPage === 'courses' ? '#1d4ed8' : '#475569',
                   cursor: 'pointer',
-                  padding: '6px 8px'
+                  padding: '6px 14px',
+                  borderRadius: 8,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 8,
+                  transition: 'all 0.15s ease'
                 }}
+                onMouseEnter={(e) => { e.currentTarget.style.color = '#1d4ed8'; }}
+                onMouseLeave={(e) => { if (currentPage !== 'courses') e.currentTarget.style.color = '#475569'; }}
               >
-                Courses
-              </button>
-
-              <button
-                onClick={() => {
-                  if (currentPage !== 'landing') onNavigate('landing');
-                  setTimeout(() => {
-                    const el = document.getElementById('masterclass-spotlight-section');
-                    if (el) el.scrollIntoView({ behavior: 'smooth' });
-                  }, 100);
-                }}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  fontSize: 14,
-                  fontWeight: 500,
-                  color: '#475569',
-                  cursor: 'pointer',
-                  padding: '6px 8px'
-                }}
-              >
-                Pricing
-              </button>
-
-              <button
-                onClick={() => {
-                  if (currentPage !== 'landing') onNavigate('landing');
-                  setTimeout(() => {
-                    const el = document.getElementById('masterclass-spotlight-section');
-                    if (el) el.scrollIntoView({ behavior: 'smooth' });
-                  }, 100);
-                }}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  fontSize: 14,
-                  fontWeight: 500,
-                  color: '#475569',
-                  cursor: 'pointer',
-                  padding: '6px 8px'
-                }}
-              >
-                Live Webinar
-              </button>
-
-              <button
-                onClick={() => {
-                  if (currentPage !== 'landing') onNavigate('landing');
-                  setTimeout(() => {
-                    const el = document.getElementById('masterclass-spotlight-section');
-                    if (el) el.scrollIntoView({ behavior: 'smooth' });
-                  }, 100);
-                }}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  fontSize: 14,
-                  fontWeight: 500,
-                  color: '#475569',
-                  cursor: 'pointer',
-                  padding: '6px 8px'
-                }}
-              >
-                About
+                <span>Explore Learning (25)</span>
               </button>
             </nav>
           </div>
 
-          {/* 2. Center: Course Search Bar */}
-          <div style={{ flex: 1, maxWidth: 360, margin: '0 12px' }} className="nav-search-bar">
+          {/* 2. Center: Prominent Large Course Search Bar */}
+          <div style={{ flex: 1, maxWidth: 680, margin: '0 20px' }} className="nav-search-bar">
             <form onSubmit={handleSearchSubmit} style={{ position: 'relative' }}>
               <Search
-                size={16}
-                color="#94a3b8"
-                style={{ position: 'absolute', left: 14, top: 12 }}
+                size={18}
+                color="#64748b"
+                style={{ position: 'absolute', left: 16, top: 15 }}
               />
               <input
                 type="text"
@@ -204,14 +142,26 @@ export default function Navbar({
                 }}
                 style={{
                   width: '100%',
-                  height: 40,
-                  padding: '0 16px 0 38px',
+                  height: 48,
+                  padding: '0 20px 0 46px',
                   borderRadius: 9999,
-                  border: '1px solid #cbd5e1',
+                  border: '1.5px solid #cbd5e1',
                   background: '#f8fafc',
-                  fontSize: 13,
+                  fontSize: 14,
+                  color: '#0f172a',
                   outline: 'none',
-                  transition: 'all 0.2s'
+                  boxShadow: '0 2px 6px rgba(15, 23, 42, 0.04)',
+                  transition: 'all 0.2s ease'
+                }}
+                onFocus={(e) => {
+                  e.target.style.borderColor = '#2563eb';
+                  e.target.style.background = '#ffffff';
+                  e.target.style.boxShadow = '0 0 0 4px rgba(37, 99, 235, 0.12)';
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = '#cbd5e1';
+                  e.target.style.background = '#f8fafc';
+                  e.target.style.boxShadow = '0 2px 6px rgba(15, 23, 42, 0.04)';
                 }}
               />
             </form>
@@ -287,30 +237,6 @@ export default function Navbar({
                       <span>My Learning Dashboard</span>
                     </button>
 
-                    <button
-                      onClick={() => {
-                        setShowUserMenu(false);
-                        onNavigate('admin');
-                      }}
-                      style={{
-                        width: '100%',
-                        textAlign: 'left',
-                        padding: '10px 16px',
-                        background: 'none',
-                        border: 'none',
-                        fontSize: 13,
-                        fontWeight: 600,
-                        color: '#334155',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 10,
-                        cursor: 'pointer'
-                      }}
-                    >
-                      <Settings size={16} color="#64748b" />
-                      <span>Organizer Admin Panel</span>
-                    </button>
-
                     <div style={{ borderTop: '1px solid #f1f5f9', margin: '4px 0' }} />
 
                     <button
@@ -340,38 +266,34 @@ export default function Navbar({
                 )}
               </div>
             ) : (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <div style={{ display: 'flex', alignItems: 'center' }}>
                 <button
                   onClick={() => onOpenAuth('login')}
                   style={{
-                    background: 'none',
-                    border: '1px solid #0056D2',
-                    borderRadius: 4,
-                    padding: '8px 16px',
-                    fontSize: 13,
+                    background: '#1d4ed8',
+                    border: 'none',
+                    borderRadius: 8,
+                    padding: '9px 22px',
+                    fontSize: 14,
                     fontWeight: 700,
-                    color: '#0056D2',
-                    cursor: 'pointer'
+                    color: '#ffffff',
+                    cursor: 'pointer',
+                    boxShadow: '0 4px 12px rgba(29, 78, 216, 0.25)',
+                    transition: 'all 0.2s ease',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 6
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = '#1e40af';
+                    e.currentTarget.style.transform = 'translateY(-1px)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = '#1d4ed8';
+                    e.currentTarget.style.transform = 'translateY(0)';
                   }}
                 >
                   Log In
-                </button>
-
-                <button
-                  onClick={() => onOpenAuth('signup')}
-                  style={{
-                    background: '#0056D2',
-                    border: 'none',
-                    borderRadius: 4,
-                    padding: '8px 18px',
-                    fontSize: 13,
-                    fontWeight: 800,
-                    color: '#ffffff',
-                    cursor: 'pointer',
-                    boxShadow: '0 2px 8px rgba(0, 86, 210, 0.3)'
-                  }}
-                >
-                  Join for Free
                 </button>
               </div>
             )}

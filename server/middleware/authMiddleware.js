@@ -4,15 +4,33 @@ import UserModel from '../models/User.js';
 export const JWT_SECRET = process.env.JWT_SECRET || 'webinarflow_jwt_secret_token_2026';
 
 export const verifyAdminToken = (req, res, next) => {
-  const token = req.headers['x-admin-token'] || (req.headers.authorization && req.headers.authorization.split(' ')[1]);
-  const expectedToken = process.env.ADMIN_API_KEY || 'webinar_secret_admin_token_2026';
+  const token = req.headers['x-admin-token'] || 
+                (req.headers.authorization && req.headers.authorization.split(' ')[1]) ||
+                req.query.token;
+  const expectedApiKey = process.env.ADMIN_API_KEY || 'webinar_secret_admin_token_2026';
 
-  // For developer ease in local demo mode, also allow default header
-  if (!token || (token !== expectedToken && token !== 'demo_admin_pass')) {
-    return res.status(401).json({ success: false, message: 'Unauthorized: Invalid or missing admin credentials.' });
+  if (!token) {
+    return res.status(401).json({ success: false, message: 'Unauthorized: Missing admin authentication credentials.' });
   }
 
-  next();
+  // 1. Check if token is direct API key
+  if (token === expectedApiKey || token === 'demo_admin_pass') {
+    req.admin = { role: 'admin', username: 'admin@kaira.com' };
+    return next();
+  }
+
+  // 2. Check if token is a signed Admin JWT
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    if (decoded && (decoded.role === 'admin' || decoded.isAdmin)) {
+      req.admin = decoded;
+      return next();
+    }
+  } catch (err) {
+    // JWT verification failed
+  }
+
+  return res.status(401).json({ success: false, message: 'Unauthorized: Invalid or expired admin credentials.' });
 };
 
 export const verifyUserToken = async (req, res, next) => {

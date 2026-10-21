@@ -3,11 +3,19 @@ import {
   createOrder,
   verifyPayment,
   createCourseOrder,
-  verifyCoursePayment
+  verifyCoursePayment,
+  createPhonePePayment,
+  verifyPhonePePayment,
+  getPhonePeOrderStatus
 } from '../controllers/paymentController.js';
 import { optionalUserToken } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
+
+// PhonePe PG V2 Live Checkout
+router.post('/phonepe/create-order', createPhonePePayment);
+router.post('/phonepe/verify', verifyPhonePePayment);
+router.get('/phonepe/status/:merchantOrderId', getPhonePeOrderStatus);
 
 // Webinar checkout
 router.post('/create-order', createOrder);

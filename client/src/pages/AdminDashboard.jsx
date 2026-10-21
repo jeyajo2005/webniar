@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Users, 
-  DollarSign, 
-  TrendingUp, 
-  Send, 
-  Search, 
-  Download, 
-  Crown, 
-  CheckCircle, 
-  Bell, 
+import {
+  Users,
+  DollarSign,
+  TrendingUp,
+  Send,
+  Search,
+  Download,
+  Crown,
+  CheckCircle,
+  Bell,
   CreditCard,
   MessageSquare,
   RefreshCw,
@@ -29,18 +29,23 @@ import {
   BookOpen,
   Plus,
   Trash2,
-  Edit
+  Edit,
+  Upload,
+  Image as ImageIcon
 } from 'lucide-react';
 import { api } from '../services/api.js';
 
 export default function AdminDashboard({ onNavigate, onWebinarUpdated }) {
   const [isAuthenticated, setIsAuthenticated] = useState(
-    sessionStorage.getItem('admin_auth') === 'true'
+    () => Boolean(sessionStorage.getItem('kaira_admin_token'))
   );
-  const [adminEmail, setAdminEmail] = useState('admin@kaira.io');
-  const [adminPassword, setAdminPassword] = useState('admin');
-  const [adminToken, setAdminToken] = useState('webinar_secret_admin_token_2026');
+  const [adminEmail, setAdminEmail] = useState('admin@kaira.com');
+  const [adminPassword, setAdminPassword] = useState('KairaAdmin@2026');
+  const [adminToken, setAdminToken] = useState(
+    () => sessionStorage.getItem('kaira_admin_token') || 'webinar_secret_admin_token_2026'
+  );
   const [authError, setAuthError] = useState('');
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
 
   const [activeTab, setActiveTab] = useState('payments'); // 'payments' | 'overview' | 'courses' | 'webinar' | 'invoices' | 'logs'
   const [paymentFilter, setPaymentFilter] = useState('all'); // 'all' | 'courses' | 'webinar'
@@ -63,6 +68,98 @@ export default function AdminDashboard({ onNavigate, onWebinarUpdated }) {
   const [coursesList, setCoursesList] = useState([]);
   const [enrollmentsList, setEnrollmentsList] = useState([]);
   const [showCourseModal, setShowCourseModal] = useState(false);
+  // Course Edit Modal State
+  const [showEditCourseModal, setShowEditCourseModal] = useState(false);
+  const [editingCourseId, setEditingCourseId] = useState(null);
+  const [editCourse, setEditCourse] = useState({
+    title: '',
+    category: 'AI & Agents',
+    price: 499,
+    originalPrice: 2999,
+    durationHours: 20,
+    instructorName: 'Dr. Elena Vance',
+    thumbnail: '',
+    description: ''
+  });
+
+  const thumbnailPresets = [
+    { label: 'Full-Stack AI & Hybrid Edu', url: '/images/course_ai.png' },
+    { label: 'Modern MERN Stack 2026', url: '/images/course_mern.png' },
+    { label: 'Cloud & Full-Stack Pro', url: '/images/course_cloud_fullstack.png' },
+    { label: 'UI/UX Design Agency 3D', url: '/images/course_uiux_agency.png' },
+    { label: 'UI/UX Design Mobile & Web', url: '/images/course_rag_uiux.png' },
+    { label: 'Cyber Security Defenses', url: '/images/course_cybersecurity.png' }
+  ];
+
+  const handleImageFileSelect = (e, isEdit = false) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 8 * 1024 * 1024) {
+        alert('File size too large! Please choose an image under 8MB.');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const base64Url = ev.target.result;
+        if (isEdit) {
+          setEditCourse(prev => ({ ...prev, thumbnail: base64Url }));
+        } else {
+          setNewCourse(prev => ({ ...prev, thumbnail: base64Url }));
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleStartEditCourse = (course) => {
+    setEditingCourseId(course._id);
+    setEditCourse({
+      title: course.title || '',
+      category: course.category || 'AI & Agents',
+      price: course.price || 499,
+      originalPrice: course.originalPrice || 2999,
+      durationHours: course.durationHours || 20,
+      instructorName: course.instructor?.name || 'Dr. Elena Vance',
+      thumbnail: course.thumbnail || '',
+      description: course.description || ''
+    });
+    setShowEditCourseModal(true);
+  };
+
+  const handleEditCourseSubmit = async (e) => {
+    e.preventDefault();
+    if (!editingCourseId) return;
+    try {
+      const activeToken = adminToken || sessionStorage.getItem('kaira_admin_token') || 'webinar_secret_admin_token_2026';
+      const res = await api.updateCourseAdmin(editingCourseId, {
+        title: editCourse.title,
+        category: editCourse.category,
+        price: Number(editCourse.price),
+        originalPrice: Number(editCourse.originalPrice),
+        durationHours: Number(editCourse.durationHours),
+        thumbnail: editCourse.thumbnail,
+        description: editCourse.description,
+        instructor: {
+          name: editCourse.instructorName,
+          title: 'Senior Instructor',
+          avatar: '/assets/female_presenter_blazer.jpg'
+        }
+      }, activeToken);
+
+      if (res.success) {
+        setShowEditCourseModal(false);
+        setEditingCourseId(null);
+        loadDashboardData();
+        setSaveSuccessMsg('Course updated successfully!');
+        setTimeout(() => setSaveSuccessMsg(''), 4000);
+      } else {
+        alert('Update failed: ' + (res.message || 'Unknown error'));
+      }
+    } catch (err) {
+      alert('Failed to update course: ' + err.message);
+    }
+  };
+
   const [newCourse, setNewCourse] = useState({
     title: '',
     category: 'AI & Agents',
@@ -77,7 +174,8 @@ export default function AdminDashboard({ onNavigate, onWebinarUpdated }) {
   const loadDashboardData = async () => {
     setLoading(true);
     try {
-      const data = await api.getAdminStats();
+      const activeToken = adminToken || sessionStorage.getItem('kaira_admin_token') || 'webinar_secret_admin_token_2026';
+      const data = await api.getAdminStats(activeToken);
       if (data.success) {
         setStats(data.stats);
         setRegistrations(data.registrations || []);
@@ -176,28 +274,30 @@ export default function AdminDashboard({ onNavigate, onWebinarUpdated }) {
     }
   }, [isAuthenticated]);
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    const cleanEmail = (adminEmail || '').trim().toLowerCase();
-    const cleanPass = (adminPassword || '').trim();
-    const cleanToken = (adminToken || '').trim();
-
-    const isValidUser = (cleanEmail === 'admin@kaira.io' || cleanEmail === 'admin' || cleanEmail === 'admin@learnflow.com') &&
-                        (cleanPass === 'admin' || cleanPass === 'admin2026' || cleanPass === 'password');
-    const isValidToken = cleanToken === 'webinar_secret_admin_token_2026' || cleanToken === 'admin2026' || cleanPass === 'webinar_secret_admin_token_2026';
-
-    if (isValidUser || isValidToken) {
-      setIsAuthenticated(true);
-      sessionStorage.setItem('admin_auth', 'true');
-      setAuthError('');
-    } else {
-      setAuthError('Invalid credentials. Default Login: admin@kaira.io / admin');
+    setIsLoggingIn(true);
+    setAuthError('');
+    try {
+      const res = await api.adminLogin(adminEmail, adminPassword);
+      if (res.success && res.token) {
+        sessionStorage.setItem('kaira_admin_token', res.token);
+        setAdminToken(res.token);
+        setIsAuthenticated(true);
+      } else {
+        setAuthError(res.message || 'Invalid credentials. Access denied.');
+      }
+    } catch (err) {
+      setAuthError('Sign in failed: ' + err.message);
+    } finally {
+      setIsLoggingIn(false);
     }
   };
 
   const handleLogout = () => {
     setIsAuthenticated(false);
-    sessionStorage.removeItem('admin_auth');
+    sessionStorage.removeItem('kaira_admin_token');
+    setAdminToken('');
   };
 
   const handleBroadcast = async (countdown) => {
@@ -243,18 +343,29 @@ export default function AdminDashboard({ onNavigate, onWebinarUpdated }) {
   };
 
   const handleDownloadCSV = () => {
-    window.open('http://localhost:5000/api/admin/export-csv', '_blank');
+    const token = adminToken || sessionStorage.getItem('kaira_admin_token') || 'webinar_secret_admin_token_2026';
+    window.open(`http://localhost:5000/api/admin/export-csv?token=${encodeURIComponent(token)}`, '_blank');
   };
 
   // Filter registrations
   const filteredRegistrations = registrations.filter(r => {
-    const matchSearch = (r.name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
-                        (r.email || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
-                        (r.phone || '').includes(searchQuery) ||
-                        (r._id || '').toLowerCase().includes(searchQuery.toLowerCase());
-    const matchFilter = filterType === 'all' || 
-                        (filterType === 'paid' && r.paymentStatus === 'completed') ||
-                        (filterType === 'pending' && r.paymentStatus !== 'completed');
+    const query = searchQuery.toLowerCase();
+    const matchSearch = !searchQuery ||
+      (r.name || '').toLowerCase().includes(query) ||
+      (r.email || '').toLowerCase().includes(query) ||
+      (r.phone || '').includes(query) ||
+      (r._id || '').toLowerCase().includes(query) ||
+      (r.paymentId || '').toLowerCase().includes(query) ||
+      (r.razorpayPaymentId || '').toLowerCase().includes(query);
+
+    const isPaid = r.paymentStatus === 'completed' || r.paymentStatus === 'paid';
+    const isFailed = r.paymentStatus === 'failed';
+    const isPending = !isPaid && !isFailed;
+
+    const matchFilter = filterType === 'all' ||
+      (filterType === 'paid' && isPaid) ||
+      (filterType === 'pending' && isPending) ||
+      (filterType === 'failed' && isFailed);
     return matchSearch && matchFilter;
   });
 
@@ -269,19 +380,13 @@ export default function AdminDashboard({ onNavigate, onWebinarUpdated }) {
           padding: '40px 32px',
           boxShadow: 'var(--shadow-card)'
         }}>
-          <div style={{
-            width: 58,
-            height: 58,
-            borderRadius: 18,
-            background: 'linear-gradient(135deg, #0056D2, #1e40af)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            margin: '0 auto 20px',
-            color: '#ffffff',
-            boxShadow: '0 8px 20px rgba(0, 86, 210, 0.3)'
-          }}>
-            <Lock size={28} />
+          {/* Kaira Logo */}
+          <div style={{ textAlign: 'center', marginBottom: 20 }}>
+            <img
+              src="/assets/kaira_logo.png"
+              alt="Kaira"
+              style={{ height: 42, maxWidth: 220, objectFit: 'contain', margin: '0 auto 12px', display: 'block' }}
+            />
           </div>
 
           <span style={{
@@ -294,14 +399,14 @@ export default function AdminDashboard({ onNavigate, onWebinarUpdated }) {
             textTransform: 'uppercase',
             letterSpacing: '0.05em'
           }}>
-            Backend Staff Portal
+            Protected Admin Portal
           </span>
 
-          <h2 style={{ fontSize: 24, fontWeight: 800, color: '#0f172a', marginTop: 12, marginBottom: 6 }}>
-            Kaira Admin Sign In
+          <h2 style={{ fontSize: 22, fontWeight: 800, color: '#0f172a', marginTop: 12, marginBottom: 6 }}>
+            Kaira Administration Sign In
           </h2>
           <p style={{ fontSize: 13, color: '#64748b', marginBottom: 24 }}>
-            Enter authorized administrator credentials to review incoming payments, student transactions, and curriculum.
+            Enter authorized administrator credentials to review registrations, ₹1 payments, and student records.
           </p>
 
           {authError && (
@@ -329,7 +434,7 @@ export default function AdminDashboard({ onNavigate, onWebinarUpdated }) {
                   type="email"
                   value={adminEmail}
                   onChange={(e) => setAdminEmail(e.target.value)}
-                  placeholder="admin@kaira.io"
+                  placeholder="admin@kaira.com"
                   required
                   style={{
                     width: '100%',
@@ -370,6 +475,7 @@ export default function AdminDashboard({ onNavigate, onWebinarUpdated }) {
 
             <button
               type="submit"
+              disabled={isLoggingIn}
               className="btn-primary"
               style={{
                 width: '100%',
@@ -380,16 +486,17 @@ export default function AdminDashboard({ onNavigate, onWebinarUpdated }) {
                 background: '#0056D2',
                 color: '#ffffff',
                 border: 'none',
-                cursor: 'pointer',
+                cursor: isLoggingIn ? 'not-allowed' : 'pointer',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: 8,
-                boxShadow: '0 4px 14px rgba(0, 86, 210, 0.3)'
+                boxShadow: '0 4px 14px rgba(0, 86, 210, 0.3)',
+                opacity: isLoggingIn ? 0.75 : 1
               }}
             >
               <Lock size={16} />
-              <span>Sign In to Admin Portal</span>
+              <span>{isLoggingIn ? 'Verifying Admin Access...' : 'Sign In to Admin Dashboard'}</span>
             </button>
           </form>
 
@@ -405,15 +512,15 @@ export default function AdminDashboard({ onNavigate, onWebinarUpdated }) {
             alignItems: 'center',
             justifyContent: 'space-between'
           }}>
-            <div>
-              <strong>Demo Credentials:</strong><br />
-              <code>admin@kaira.io</code> / <code>admin</code>
+            <div style={{ textAlign: 'left' }}>
+              <strong>Admin Credentials:</strong><br />
+              <code>admin@kaira.com</code> / <code>KairaAdmin@2026</code>
             </div>
             <button
               type="button"
               onClick={() => {
-                setAdminEmail('admin@kaira.io');
-                setAdminPassword('admin');
+                setAdminEmail('admin@kaira.com');
+                setAdminPassword('KairaAdmin@2026');
               }}
               style={{
                 background: '#ffffff',
@@ -429,6 +536,27 @@ export default function AdminDashboard({ onNavigate, onWebinarUpdated }) {
               Autofill
             </button>
           </div>
+
+          <div style={{ marginTop: 24, paddingTop: 16, borderTop: '1px solid #f1f5f9' }}>
+            <button
+              type="button"
+              onClick={() => {
+                window.location.hash = '';
+                if (onNavigate) onNavigate('landing');
+              }}
+              style={{
+                background: 'none',
+                border: 'none',
+                color: '#64748b',
+                fontSize: 13,
+                fontWeight: 600,
+                cursor: 'pointer',
+                textDecoration: 'underline'
+              }}
+            >
+              ← Back to Public Website
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -437,17 +565,24 @@ export default function AdminDashboard({ onNavigate, onWebinarUpdated }) {
   return (
     <div style={{ padding: '40px 0 80px' }}>
       <div className="container" style={{ maxWidth: 1160 }}>
-        
+
         {/* TOP BAR */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 28, flexWrap: 'wrap', gap: 16 }}>
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
-              <span className="badge-tag" style={{ background: 'rgba(99, 102, 241, 0.15)', color: '#818cf8' }}>
-                <Sparkles size={14} /> Organizer Command Center
-              </span>
-              <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>Class Scheduled: November 4, 2026</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+            <img
+              src="/assets/kaira_logo.png"
+              alt="Kaira"
+              style={{ height: 38, objectFit: 'contain' }}
+            />
+            <div style={{ borderLeft: '2px solid #e2e8f0', paddingLeft: 16 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 2 }}>
+                <span className="badge-tag" style={{ background: '#eff6ff', color: '#0056D2', fontSize: 11, fontWeight: 800 }}>
+                  <Sparkles size={13} /> Kaira Admin Command Center
+                </span>
+                <span style={{ fontSize: 12, color: '#64748b' }}>Protected System</span>
+              </div>
+              <h1 style={{ fontSize: 24, fontWeight: 800, color: '#0f172a', margin: 0 }}>Course & Payment Administration</h1>
             </div>
-            <h1 style={{ fontSize: 32, fontWeight: 800, color: '#0f172a' }}>Webinar Automation Dashboard</h1>
           </div>
 
           <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
@@ -1045,8 +1180,9 @@ export default function AdminDashboard({ onNavigate, onWebinarUpdated }) {
                   }}
                 >
                   <option value="all">All Registrations</option>
-                  <option value="paid">Paid & Verified</option>
-                  <option value="pending">Pending</option>
+                  <option value="paid">Paid & Verified (₹1)</option>
+                  <option value="pending">Pending Payment</option>
+                  <option value="failed">Failed Payment</option>
                 </select>
               </div>
 
@@ -1054,7 +1190,7 @@ export default function AdminDashboard({ onNavigate, onWebinarUpdated }) {
               <button
                 onClick={handleDownloadCSV}
                 className="btn-secondary"
-                style={{ fontSize: 13, padding: '10px 18px', borderRadius: 10, display: 'flex', alignItems: 'center', gap: 8 }}
+                style={{ fontSize: 13, padding: '10px 18px', borderRadius: 10, display: 'flex', alignItems: 'center', gap: 8, background: '#0056D2', color: '#ffffff', border: 'none', cursor: 'pointer' }}
               >
                 <Download size={15} />
                 <span>Export Registrations to CSV</span>
@@ -1066,66 +1202,137 @@ export default function AdminDashboard({ onNavigate, onWebinarUpdated }) {
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
                 <thead>
                   <tr style={{ background: '#f8fafc', borderBottom: '2px solid #e2e8f0', color: '#475569', textAlign: 'left' }}>
-                    <th style={{ padding: 12 }}>Registration ID</th>
-                    <th style={{ padding: 12 }}>Name</th>
-                    <th style={{ padding: 12 }}>Email & Phone</th>
-                    <th style={{ padding: 12 }}>Invoice #</th>
-                    <th style={{ padding: 12 }}>Amount</th>
-                    <th style={{ padding: 12 }}>Payment Status</th>
-                    <th style={{ padding: 12, textAlign: 'center' }}>Action</th>
+                    <th style={{ padding: '12px 14px' }}>Registration ID & Date</th>
+                    <th style={{ padding: '12px 14px' }}>Customer Name</th>
+                    <th style={{ padding: '12px 14px' }}>Email Address</th>
+                    <th style={{ padding: '12px 14px' }}>Phone Number</th>
+                    <th style={{ padding: '12px 14px' }}>Amount</th>
+                    <th style={{ padding: '12px 14px' }}>Payment Status</th>
+                    <th style={{ padding: '12px 14px' }}>Gateway Trans / Pay ID</th>
+                    <th style={{ padding: '12px 14px', textAlign: 'center' }}>Action</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredRegistrations.map((r, idx) => (
-                    <tr key={idx} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                      <td style={{ padding: 12, fontWeight: 600, color: '#0f172a' }}>
-                        <code>{r._id}</code>
+                  {filteredRegistrations.length === 0 ? (
+                    <tr>
+                      <td colSpan={8} style={{ padding: 32, textAlign: 'center', color: '#64748b' }}>
+                        No registration records matching your filter.
                       </td>
-                      <td style={{ padding: 12, fontWeight: 700, color: '#0f172a' }}>
-                        {r.name}
-                      </td>
-                      <td style={{ padding: 12 }}>
-                        <div>{r.email}</div>
-                        <div style={{ color: '#64748b', fontSize: 12 }}>{r.phone}</div>
-                      </td>
-                      <td style={{ padding: 12 }}>
-                        <code>{r.invoiceNumber || 'INV-2026-0001'}</code>
-                      </td>
-                      <td style={{ padding: 12, fontWeight: 700, color: '#4f46e5' }}>
-                        ₹{r.amountPaid || 499}
-                      </td>
-                      <td style={{ padding: 12 }}>
+                    </tr>
+                  ) : (
+                    filteredRegistrations.map((r, idx) => {
+                      const isPaid = r.paymentStatus === 'completed' || r.paymentStatus === 'paid';
+                      const isFailed = r.paymentStatus === 'failed';
+                      const statusBadge = isPaid ? (
                         <span style={{
-                          background: r.paymentStatus === 'completed' ? '#dcfce7' : '#fef3c7',
-                          color: r.paymentStatus === 'completed' ? '#15803d' : '#b45309',
+                          background: '#dcfce7',
+                          color: '#15803d',
                           padding: '4px 10px',
                           borderRadius: 9999,
                           fontSize: 11,
-                          fontWeight: 700
+                          fontWeight: 800,
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: 4
                         }}>
-                          {r.paymentStatus === 'completed' ? '✓ PAID & VERIFIED' : 'PENDING'}
+                          <CheckCircle2 size={12} /> PAID
                         </span>
-                      </td>
-                      <td style={{ padding: 12, textAlign: 'center' }}>
-                        <button
-                          onClick={() => handleResendNotification(r._id)}
-                          disabled={resendingId === r._id}
-                          style={{
-                            background: '#eff6ff',
-                            border: '1px solid #bfdbfe',
-                            color: '#1d4ed8',
-                            padding: '6px 12px',
-                            borderRadius: 6,
-                            fontSize: 12,
-                            fontWeight: 600,
-                            cursor: 'pointer'
-                          }}
-                        >
-                          {resendingId === r._id ? 'Sending...' : 'Resend Alerts'}
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
+                      ) : isFailed ? (
+                        <span style={{
+                          background: '#fee2e2',
+                          color: '#b91c1c',
+                          padding: '4px 10px',
+                          borderRadius: 9999,
+                          fontSize: 11,
+                          fontWeight: 800,
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: 4
+                        }}>
+                          <AlertCircle size={12} /> FAILED
+                        </span>
+                      ) : (
+                        <span style={{
+                          background: '#fef3c7',
+                          color: '#b45309',
+                          padding: '4px 10px',
+                          borderRadius: 9999,
+                          fontSize: 11,
+                          fontWeight: 800,
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: 4
+                        }}>
+                          <Clock size={12} /> PENDING
+                        </span>
+                      );
+
+                      const regDate = r.createdAt
+                        ? new Date(r.createdAt).toLocaleString('en-IN', {
+                          day: '2-digit',
+                          month: 'short',
+                          year: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })
+                        : 'Recent';
+
+                      return (
+                        <tr key={idx} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                          <td style={{ padding: '12px 14px', fontWeight: 600, color: '#0f172a' }}>
+                            <code>{r._id}</code>
+                            <div style={{ color: '#64748b', fontSize: 11, marginTop: 3 }}>
+                              {regDate}
+                            </div>
+                          </td>
+                          <td style={{ padding: '12px 14px', fontWeight: 700, color: '#0f172a' }}>
+                            {r.name}
+                          </td>
+                          <td style={{ padding: '12px 14px', color: '#334155' }}>
+                            {r.email}
+                          </td>
+                          <td style={{ padding: '12px 14px', color: '#334155' }}>
+                            {r.phone}
+                          </td>
+                          <td style={{ padding: '12px 14px', fontWeight: 800, color: '#0056D2' }}>
+                            ₹{r.amountPaid || r.amount || 1}
+                          </td>
+                          <td style={{ padding: '12px 14px' }}>
+                            {statusBadge}
+                          </td>
+                          <td style={{ padding: '12px 14px' }}>
+                            <code style={{
+                              background: '#f1f5f9',
+                              padding: '3px 7px',
+                              borderRadius: 4,
+                              fontSize: 11,
+                              color: '#334155'
+                            }}>
+                              {r.paymentId || r.razorpayPaymentId || r.orderId || '-'}
+                            </code>
+                          </td>
+                          <td style={{ padding: '12px 14px', textAlign: 'center' }}>
+                            <button
+                              onClick={() => handleResendNotification(r._id)}
+                              disabled={resendingId === r._id}
+                              style={{
+                                background: '#eff6ff',
+                                border: '1px solid #bfdbfe',
+                                color: '#1d4ed8',
+                                padding: '6px 12px',
+                                borderRadius: 6,
+                                fontSize: 11,
+                                fontWeight: 700,
+                                cursor: 'pointer'
+                              }}
+                            >
+                              {resendingId === r._id ? 'Sending...' : 'Resend Receipt'}
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
                 </tbody>
               </table>
             </div>
@@ -1502,14 +1709,52 @@ export default function AdminDashboard({ onNavigate, onWebinarUpdated }) {
                       <td style={{ padding: 12, textAlign: 'center', color: '#b45309', fontWeight: 700 }}>
                         ★ {c.rating || 4.9}
                       </td>
-                      <td style={{ padding: 12, textAlign: 'right' }}>
-                        <button
-                          onClick={() => handleDeleteCourse(c._id)}
-                          style={{ background: 'none', border: 'none', color: '#dc2626', cursor: 'pointer', padding: 4 }}
-                          title="Delete Course"
-                        >
-                          <Trash2 size={16} />
-                        </button>
+                      <td style={{ padding: 12, textAlign: 'right', whiteSpace: 'nowrap' }}>
+                        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, justifyContent: 'flex-end' }}>
+                          <button
+                            onClick={() => handleStartEditCourse(c)}
+                            style={{
+                              background: '#eff6ff',
+                              border: '1px solid #bfdbfe',
+                              color: '#1d4ed8',
+                              padding: '6px 12px',
+                              borderRadius: 8,
+                              fontSize: 12,
+                              fontWeight: 700,
+                              cursor: 'pointer',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: 5,
+                              transition: 'all 0.15s ease'
+                            }}
+                            title="Edit Course Details"
+                          >
+                            <Edit size={14} />
+                            <span>Edit</span>
+                          </button>
+
+                          <button
+                            onClick={() => handleDeleteCourse(c._id)}
+                            style={{
+                              background: '#fef2f2',
+                              border: '1px solid #fecaca',
+                              color: '#dc2626',
+                              padding: '6px 10px',
+                              borderRadius: 8,
+                              fontSize: 12,
+                              fontWeight: 700,
+                              cursor: 'pointer',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: 5,
+                              transition: 'all 0.15s ease'
+                            }}
+                            title="Delete Course"
+                          >
+                            <Trash2 size={14} />
+                            <span>Delete</span>
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -1591,16 +1836,28 @@ export default function AdminDashboard({ onNavigate, onWebinarUpdated }) {
                 <div style={{
                   background: '#ffffff',
                   width: '100%',
-                  maxWidth: 520,
-                  borderRadius: 16,
+                  maxWidth: 540,
+                  maxHeight: '90vh',
+                  overflowY: 'auto',
+                  borderRadius: 20,
                   padding: 28,
-                  position: 'relative'
+                  position: 'relative',
+                  boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)'
                 }}>
-                  <h3 style={{ fontSize: 18, fontWeight: 800, color: '#0f172a', marginBottom: 16 }}>
-                    Create & Publish New Course
-                  </h3>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                    <h3 style={{ fontSize: 18, fontWeight: 800, color: '#0f172a', margin: 0 }}>
+                      Create & Publish New Course
+                    </h3>
+                    <button
+                      type="button"
+                      onClick={() => setShowCourseModal(false)}
+                      style={{ background: '#f1f5f9', border: 'none', borderRadius: '50%', width: 30, height: 30, cursor: 'pointer', fontSize: 14 }}
+                    >
+                      ✕
+                    </button>
+                  </div>
 
-                  <form onSubmit={handleCreateCourseSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                  <form onSubmit={handleCreateCourseSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
                     <div>
                       <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: '#334155', marginBottom: 4 }}>Course Title</label>
                       <input
@@ -1651,14 +1908,117 @@ export default function AdminDashboard({ onNavigate, onWebinarUpdated }) {
                       />
                     </div>
 
-                    <div>
-                      <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: '#334155', marginBottom: 4 }}>Thumbnail Image URL</label>
-                      <input
-                        type="url"
-                        value={newCourse.thumbnail}
-                        onChange={(e) => setNewCourse({ ...newCourse, thumbnail: e.target.value })}
-                        style={{ width: '100%', padding: '9px 12px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 13 }}
-                      />
+                    {/* Image Chooser: File Upload + Presets + Preview + URL */}
+                    <div style={{ background: '#f8fafc', padding: 14, borderRadius: 12, border: '1px solid #e2e8f0' }}>
+                      <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: '#334155', marginBottom: 8 }}>
+                        Course Thumbnail Image
+                      </label>
+
+                      {/* Live Image Preview */}
+                      {newCourse.thumbnail && (
+                        <div style={{ position: 'relative', width: '100%', height: 130, borderRadius: 10, overflow: 'hidden', marginBottom: 12, border: '1.5px solid #cbd5e1' }}>
+                          <img
+                            src={newCourse.thumbnail}
+                            alt="Course Thumbnail Preview"
+                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setNewCourse({ ...newCourse, thumbnail: '' })}
+                            style={{
+                              position: 'absolute',
+                              top: 6,
+                              right: 6,
+                              background: 'rgba(0,0,0,0.65)',
+                              color: '#fff',
+                              border: 'none',
+                              borderRadius: '50%',
+                              width: 24,
+                              height: 24,
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              fontSize: 12
+                            }}
+                            title="Remove Image"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      )}
+
+                      {/* 1. Choose Image from Computer */}
+                      <div style={{ marginBottom: 10 }}>
+                        <input
+                          type="file"
+                          id="create-course-image-file"
+                          accept="image/*"
+                          style={{ display: 'none' }}
+                          onChange={(e) => handleImageFileSelect(e, false)}
+                        />
+                        <label
+                          htmlFor="create-course-image-file"
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: 8,
+                            background: '#eff6ff',
+                            border: '1.5px dashed #3b82f6',
+                            color: '#1d4ed8',
+                            padding: '10px 14px',
+                            borderRadius: 10,
+                            fontSize: 13,
+                            fontWeight: 700,
+                            cursor: 'pointer',
+                            textAlign: 'center',
+                            transition: 'all 0.15s'
+                          }}
+                        >
+                          <Upload size={16} />
+                          <span>📁 Choose Image / Upload from Device</span>
+                        </label>
+                      </div>
+
+                      {/* 2. Choose from Presets */}
+                      <div style={{ marginBottom: 10 }}>
+                        <span style={{ fontSize: 11, fontWeight: 600, color: '#64748b', display: 'block', marginBottom: 6 }}>
+                          Or pick from curated thumbnails:
+                        </span>
+                        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                          {thumbnailPresets.map((preset, pIdx) => (
+                            <button
+                              key={pIdx}
+                              type="button"
+                              onClick={() => setNewCourse({ ...newCourse, thumbnail: preset.url })}
+                              style={{
+                                background: newCourse.thumbnail === preset.url ? '#dbeafe' : '#ffffff',
+                                border: newCourse.thumbnail === preset.url ? '1.5px solid #2563eb' : '1px solid #cbd5e1',
+                                borderRadius: 6,
+                                padding: '4px 8px',
+                                fontSize: 11,
+                                fontWeight: 600,
+                                color: newCourse.thumbnail === preset.url ? '#1d4ed8' : '#475569',
+                                cursor: 'pointer'
+                              }}
+                            >
+                              {preset.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* 3. Or enter direct Image URL */}
+                      <div>
+                        <input
+                          type="url"
+                          placeholder="Or paste direct image URL (https://...)"
+                          value={newCourse.thumbnail}
+                          onChange={(e) => setNewCourse({ ...newCourse, thumbnail: e.target.value })}
+                          style={{ width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 12, background: '#ffffff' }}
+                        />
+                      </div>
                     </div>
 
                     <div>
@@ -1671,7 +2031,7 @@ export default function AdminDashboard({ onNavigate, onWebinarUpdated }) {
                       />
                     </div>
 
-                    <div style={{ display: 'flex', gap: 10, marginTop: 12 }}>
+                    <div style={{ display: 'flex', gap: 10, marginTop: 8 }}>
                       <button
                         type="submit"
                         style={{
@@ -1679,7 +2039,7 @@ export default function AdminDashboard({ onNavigate, onWebinarUpdated }) {
                           background: 'linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)',
                           color: '#ffffff',
                           border: 'none',
-                          padding: '11px',
+                          padding: '12px',
                           borderRadius: 8,
                           fontWeight: 700,
                           fontSize: 14,
@@ -1695,7 +2055,250 @@ export default function AdminDashboard({ onNavigate, onWebinarUpdated }) {
                           background: '#f1f5f9',
                           border: '1px solid #cbd5e1',
                           color: '#334155',
-                          padding: '11px 18px',
+                          padding: '12px 18px',
+                          borderRadius: 8,
+                          fontWeight: 600,
+                          cursor: 'pointer'
+                        }}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            )}
+
+            {/* EDIT COURSE MODAL */}
+            {showEditCourseModal && (
+              <div style={{
+                position: 'fixed',
+                inset: 0,
+                zIndex: 10000,
+                background: 'rgba(15, 23, 42, 0.75)',
+                backdropFilter: 'blur(8px)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: 20
+              }}>
+                <div style={{
+                  background: '#ffffff',
+                  width: '100%',
+                  maxWidth: 540,
+                  maxHeight: '90vh',
+                  overflowY: 'auto',
+                  borderRadius: 20,
+                  padding: 28,
+                  position: 'relative',
+                  boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)'
+                }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                    <h3 style={{ fontSize: 18, fontWeight: 800, color: '#0f172a', margin: 0 }}>
+                      Edit Course Details
+                    </h3>
+                    <button
+                      type="button"
+                      onClick={() => setShowEditCourseModal(false)}
+                      style={{ background: '#f1f5f9', border: 'none', borderRadius: '50%', width: 30, height: 30, cursor: 'pointer', fontSize: 14 }}
+                    >
+                      ✕
+                    </button>
+                  </div>
+
+                  <form onSubmit={handleEditCourseSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                    <div>
+                      <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: '#334155', marginBottom: 4 }}>Course Title</label>
+                      <input
+                        type="text"
+                        required
+                        value={editCourse.title}
+                        onChange={(e) => setEditCourse({ ...editCourse, title: e.target.value })}
+                        style={{ width: '100%', padding: '9px 12px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 13 }}
+                      />
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                      <div>
+                        <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: '#334155', marginBottom: 4 }}>Category</label>
+                        <select
+                          value={editCourse.category}
+                          onChange={(e) => setEditCourse({ ...editCourse, category: e.target.value })}
+                          style={{ width: '100%', padding: '9px 12px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 13 }}
+                        >
+                          <option value="AI & Agents">AI & Agents</option>
+                          <option value="Full-Stack Development">Full-Stack Development</option>
+                          <option value="Cloud & DevOps">Cloud & DevOps</option>
+                          <option value="UI/UX Design">UI/UX Design</option>
+                          <option value="Cyber Security">Cyber Security</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: '#334155', marginBottom: 4 }}>Price (INR)</label>
+                        <input
+                          type="number"
+                          required
+                          value={editCourse.price}
+                          onChange={(e) => setEditCourse({ ...editCourse, price: e.target.value })}
+                          style={{ width: '100%', padding: '9px 12px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 13 }}
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: '#334155', marginBottom: 4 }}>Instructor Name</label>
+                      <input
+                        type="text"
+                        value={editCourse.instructorName}
+                        onChange={(e) => setEditCourse({ ...editCourse, instructorName: e.target.value })}
+                        style={{ width: '100%', padding: '9px 12px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 13 }}
+                      />
+                    </div>
+
+                    {/* Image Chooser in Edit Modal */}
+                    <div style={{ background: '#f8fafc', padding: 14, borderRadius: 12, border: '1px solid #e2e8f0' }}>
+                      <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: '#334155', marginBottom: 8 }}>
+                        Course Thumbnail Image
+                      </label>
+
+                      {editCourse.thumbnail && (
+                        <div style={{ position: 'relative', width: '100%', height: 130, borderRadius: 10, overflow: 'hidden', marginBottom: 12, border: '1.5px solid #cbd5e1' }}>
+                          <img
+                            src={editCourse.thumbnail}
+                            alt="Course Thumbnail Preview"
+                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setEditCourse({ ...editCourse, thumbnail: '' })}
+                            style={{
+                              position: 'absolute',
+                              top: 6,
+                              right: 6,
+                              background: 'rgba(0,0,0,0.65)',
+                              color: '#fff',
+                              border: 'none',
+                              borderRadius: '50%',
+                              width: 24,
+                              height: 24,
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              fontSize: 12
+                            }}
+                            title="Remove Image"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      )}
+
+                      <div style={{ marginBottom: 10 }}>
+                        <input
+                          type="file"
+                          id="edit-course-image-file"
+                          accept="image/*"
+                          style={{ display: 'none' }}
+                          onChange={(e) => handleImageFileSelect(e, true)}
+                        />
+                        <label
+                          htmlFor="edit-course-image-file"
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: 8,
+                            background: '#eff6ff',
+                            border: '1.5px dashed #3b82f6',
+                            color: '#1d4ed8',
+                            padding: '10px 14px',
+                            borderRadius: 10,
+                            fontSize: 13,
+                            fontWeight: 700,
+                            cursor: 'pointer',
+                            textAlign: 'center'
+                          }}
+                        >
+                          <Upload size={16} />
+                          <span>📁 Choose Image / Upload from Device</span>
+                        </label>
+                      </div>
+
+                      <div style={{ marginBottom: 10 }}>
+                        <span style={{ fontSize: 11, fontWeight: 600, color: '#64748b', display: 'block', marginBottom: 6 }}>
+                          Or choose stock preset thumbnail:
+                        </span>
+                        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                          {thumbnailPresets.map((preset, pIdx) => (
+                            <button
+                              key={pIdx}
+                              type="button"
+                              onClick={() => setEditCourse({ ...editCourse, thumbnail: preset.url })}
+                              style={{
+                                background: editCourse.thumbnail === preset.url ? '#dbeafe' : '#ffffff',
+                                border: editCourse.thumbnail === preset.url ? '1.5px solid #2563eb' : '1px solid #cbd5e1',
+                                borderRadius: 6,
+                                padding: '4px 8px',
+                                fontSize: 11,
+                                fontWeight: 600,
+                                color: editCourse.thumbnail === preset.url ? '#1d4ed8' : '#475569',
+                                cursor: 'pointer'
+                              }}
+                            >
+                              {preset.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div>
+                        <input
+                          type="url"
+                          placeholder="Or paste direct image URL (https://...)"
+                          value={editCourse.thumbnail}
+                          onChange={(e) => setEditCourse({ ...editCourse, thumbnail: e.target.value })}
+                          style={{ width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 12, background: '#ffffff' }}
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: '#334155', marginBottom: 4 }}>Short Description</label>
+                      <textarea
+                        rows={2}
+                        value={editCourse.description}
+                        onChange={(e) => setEditCourse({ ...editCourse, description: e.target.value })}
+                        style={{ width: '100%', padding: '9px 12px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 13 }}
+                      />
+                    </div>
+
+                    <div style={{ display: 'flex', gap: 10, marginTop: 8 }}>
+                      <button
+                        type="submit"
+                        style={{
+                          flex: 1,
+                          background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
+                          color: '#ffffff',
+                          border: 'none',
+                          padding: '12px',
+                          borderRadius: 8,
+                          fontWeight: 700,
+                          fontSize: 14,
+                          cursor: 'pointer'
+                        }}
+                      >
+                        Save & Update Course
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setShowEditCourseModal(false)}
+                        style={{
+                          background: '#f1f5f9',
+                          border: '1px solid #cbd5e1',
+                          color: '#334155',
+                          padding: '12px 18px',
                           borderRadius: 8,
                           fontWeight: 600,
                           cursor: 'pointer'

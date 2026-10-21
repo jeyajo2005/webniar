@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import RegistrationForm from '../components/RegistrationForm.jsx';
-import { 
-  ArrowRight, 
-  GraduationCap, 
-  Users, 
-  Infinity as InfinityIcon, 
-  Check, 
-  Play, 
-  Star, 
-  Clock, 
-  UserCheck, 
+import {
+  ArrowRight,
+  GraduationCap,
+  Users,
+  Infinity as InfinityIcon,
+  Check,
+  Play,
+  Star,
+  Clock,
+  UserCheck,
   Calendar,
   Send,
   Linkedin,
@@ -38,17 +38,24 @@ import {
   Gift,
   CheckCircle2,
   QrCode,
-  Mail
+  Mail,
+  ChevronLeft,
+  ChevronRight,
+  Pause
 } from 'lucide-react';
 import { api } from '../services/api.js';
+import { FaReact, FaNodeJs, FaPython, FaAws, FaDocker } from 'react-icons/fa';
+import { SiTypescript, SiKubernetes, SiTailwindcss } from 'react-icons/si';
 
-export default function LandingPage({ 
-  webinar, 
+export default function LandingPage({
+  webinar,
+  onRegisterSuccess,
   onPaymentSuccess,
   onViewCourse,
   onEnrollCourse,
   onStartLearning,
   onOpenIntroVideo,
+  onNavigateToCourses,
   searchQuery = '',
   onSearch
 }) {
@@ -205,7 +212,7 @@ export default function LandingPage({
               gap: 48,
               alignItems: 'center'
             }} className="hero-grid">
-              
+
               {/* Left Column: Form & Content */}
               <div>
                 {/* Live Pill Badge */}
@@ -228,7 +235,7 @@ export default function LandingPage({
                     display: 'inline-block'
                   }} />
                   <span style={{ fontSize: 12, fontWeight: 700, color: '#1d4ed8', letterSpacing: '0.02em' }}>
-                    ✨ #1 Online Skill Platform • 1st Video Lesson Free on All Courses
+                    #1 Online Skill Platform • 1st Video Lesson Free on All Courses
                   </span>
                 </div>
 
@@ -262,154 +269,85 @@ export default function LandingPage({
                   Learn from industry experts with flexible online courses across multiple fields. Start with lesson 1 free, build job-ready portfolios, and earn accredited certificates.
                 </p>
 
-                {/* Inquiry Lead Form matching Image 1 with Modern Icons */}
-                <form onSubmit={handleLeadSubmit} style={{ maxWidth: 470, marginBottom: 32 }}>
-                  {/* Name Input with User Icon */}
-                  <div style={{ position: 'relative', marginBottom: 14 }}>
-                    <User size={18} color="#94a3b8" style={{ position: 'absolute', left: 16, top: 16, pointerEvents: 'none' }} />
-                    <input
-                      type="text"
-                      placeholder="Insert Your Name"
-                      value={leadForm.name}
-                      onChange={(e) => setLeadForm({ ...leadForm, name: e.target.value })}
-                      style={{
-                        width: '100%',
-                        padding: '14px 18px 14px 44px',
-                        borderRadius: 12,
-                        border: '1.5px solid #e2e8f0',
-                        background: '#f8fafc',
-                        fontSize: 15,
-                        color: '#0f172a',
-                        outline: 'none',
-                        boxSizing: 'border-box',
-                        transition: 'all 0.2s ease'
-                      }}
-                      onFocus={(e) => {
-                        e.target.style.borderColor = '#2563eb';
-                        e.target.style.background = '#ffffff';
-                        e.target.style.boxShadow = '0 0 0 4px rgba(37, 99, 235, 0.12)';
-                      }}
-                      onBlur={(e) => {
-                        e.target.style.borderColor = '#e2e8f0';
-                        e.target.style.background = '#f8fafc';
-                        e.target.style.boxShadow = 'none';
-                      }}
-                    />
-                  </div>
-
-                  {/* Email & Interest Row with Icons */}
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 16 }}>
-                    <div style={{ position: 'relative' }}>
-                      <Mail size={17} color="#94a3b8" style={{ position: 'absolute', left: 16, top: 16, pointerEvents: 'none' }} />
-                      <input
-                        type="email"
-                        placeholder="Email"
-                        value={leadForm.email}
-                        onChange={(e) => setLeadForm({ ...leadForm, email: e.target.value })}
-                        style={{
-                          width: '100%',
-                          padding: '14px 18px 14px 42px',
-                          borderRadius: 12,
-                          border: '1.5px solid #e2e8f0',
-                          background: '#f8fafc',
-                          fontSize: 15,
-                          color: '#0f172a',
-                          outline: 'none',
-                          boxSizing: 'border-box',
-                          transition: 'all 0.2s ease'
-                        }}
-                        onFocus={(e) => {
-                          e.target.style.borderColor = '#2563eb';
-                          e.target.style.background = '#ffffff';
-                          e.target.style.boxShadow = '0 0 0 4px rgba(37, 99, 235, 0.12)';
-                        }}
-                        onBlur={(e) => {
-                          e.target.style.borderColor = '#e2e8f0';
-                          e.target.style.background = '#f8fafc';
-                          e.target.style.boxShadow = 'none';
-                        }}
-                      />
-                    </div>
-
-                    <div style={{ position: 'relative' }}>
-                      <Sparkles size={16} color="#f59e0b" style={{ position: 'absolute', left: 14, top: 16, pointerEvents: 'none' }} />
-                      <select
-                        value={leadForm.interest}
-                        onChange={(e) => setLeadForm({ ...leadForm, interest: e.target.value })}
-                        style={{
-                          width: '100%',
-                          padding: '14px 14px 14px 38px',
-                          borderRadius: 12,
-                          border: '1.5px solid #e2e8f0',
-                          background: '#f8fafc',
-                          fontSize: 14,
-                          fontWeight: 500,
-                          color: leadForm.interest ? '#0f172a' : '#94a3b8',
-                          outline: 'none',
-                          boxSizing: 'border-box',
-                          cursor: 'pointer',
-                          transition: 'all 0.2s ease'
-                        }}
-                        onFocus={(e) => {
-                          e.target.style.borderColor = '#2563eb';
-                          e.target.style.background = '#ffffff';
-                        }}
-                        onBlur={(e) => {
-                          e.target.style.borderColor = '#e2e8f0';
-                          e.target.style.background = '#f8fafc';
-                        }}
-                      >
-                        <option value="AI & Machine Learning">AI & Machine Learning</option>
-                        <option value="Full-Stack Web Dev">Full-Stack Web Dev</option>
-                        <option value="Cloud Architecture">Cloud Architecture</option>
-                        <option value="Data Science & ML">Data Science & ML</option>
-                        <option value="Cyber Security">Cyber Security</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  {/* Coral CTA Button with Hover Polish */}
+                {/* Clean Modern Action Row */}
+                <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', marginBottom: 24, marginTop: 8 }}>
                   <button
-                    type="submit"
+                    onClick={() => { if (onNavigateToCourses) onNavigateToCourses(); else scrollToCourses(); }}
                     style={{
-                      width: '100%',
-                      padding: '16px 28px',
-                      borderRadius: 12,
-                      background: 'linear-gradient(135deg, #ff6b4a 0%, #ff5230 100%)',
+                      padding: '16px 32px',
+                      borderRadius: 14,
+                      background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
                       color: '#ffffff',
                       fontSize: 16,
                       fontWeight: 800,
                       border: 'none',
                       cursor: 'pointer',
-                      boxShadow: '0 10px 25px -4px rgba(255, 107, 74, 0.55)',
-                      transition: 'all 0.25s ease',
-                      display: 'flex',
+                      boxShadow: '0 10px 25px -4px rgba(37, 99, 235, 0.45)',
+                      display: 'inline-flex',
                       alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: 8,
-                      letterSpacing: '0.01em'
+                      gap: 10,
+                      transition: 'all 0.2s ease'
                     }}
                     onMouseEnter={(e) => {
-                      e.currentTarget.style.transform = 'translateY(-2px) scale(1.01)';
-                      e.currentTarget.style.boxShadow = '0 14px 30px -4px rgba(255, 107, 74, 0.7)';
+                      e.currentTarget.style.transform = 'translateY(-2px)';
+                      e.currentTarget.style.boxShadow = '0 14px 30px -4px rgba(37, 99, 235, 0.6)';
                     }}
                     onMouseLeave={(e) => {
-                      e.currentTarget.style.transform = 'translateY(0) scale(1)';
-                      e.currentTarget.style.boxShadow = '0 10px 25px -4px rgba(255, 107, 74, 0.55)';
+                      e.currentTarget.style.transform = 'translateY(0)';
+                      e.currentTarget.style.boxShadow = '0 10px 25px -4px rgba(37, 99, 235, 0.45)';
                     }}
                   >
                     <span>Explore Courses</span>
                     <ArrowRight size={18} />
                   </button>
 
-                  <div style={{ display: 'flex', justifyContent: 'center', gap: 16, marginTop: 12, fontSize: 12, color: '#64748b' }}>
-                    <span>✓ 1st Lesson 100% Free</span>
-                    <span>•</span>
-                    <span>✓ Verifiable Certificate</span>
-                    <span>•</span>
-                    <span>✓ No Credit Card Required</span>
-                  </div>
-                </form>
+                  <button
+                    onClick={() => {
+                      const el = document.getElementById('webinar-spotlight-section');
+                      if (el) el.scrollIntoView({ behavior: 'smooth' });
+                    }}
+                    style={{
+                      padding: '16px 26px',
+                      borderRadius: 14,
+                      background: '#ffffff',
+                      color: '#0f172a',
+                      fontSize: 15,
+                      fontWeight: 700,
+                      border: '1.5px solid #e2e8f0',
+                      cursor: 'pointer',
+                      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.04)',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 8,
+                      transition: 'all 0.2s ease'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.borderColor = '#cbd5e1';
+                      e.currentTarget.style.background = '#f8fafc';
+                      e.currentTarget.style.transform = 'translateY(-2px)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.borderColor = '#e2e8f0';
+                      e.currentTarget.style.background = '#ffffff';
+                      e.currentTarget.style.transform = 'translateY(0)';
+                    }}
+                  >
+                    <Flame size={18} color="#ef4444" />
+                    <span>Live Masterclass</span>
+                  </button>
+                </div>
+
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, marginBottom: 32, fontSize: 13, color: '#64748b', fontWeight: 600 }}>
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                    <CheckCircle2 size={16} color="#16a34a" /> 1st Lesson 100% Free
+                  </span>
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                    <CheckCircle2 size={16} color="#16a34a" /> Accredited Certificate
+                  </span>
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                    <CheckCircle2 size={16} color="#16a34a" /> Lifetime Access
+                  </span>
+                </div>
 
                 {/* 3 Metric Stats matching Image 1 */}
                 <div style={{
@@ -438,7 +376,7 @@ export default function LandingPage({
 
               {/* Right Column: Warm Yellow Backdrop + Cheerful Students + Depth Badges */}
               <div style={{ position: 'relative', display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 450 }}>
-                
+
                 {/* Organic Amber/Yellow Backdrop Shape matching Image 1 */}
                 <div style={{
                   position: 'absolute',
@@ -453,52 +391,7 @@ export default function LandingPage({
                   boxShadow: '0 20px 40px rgba(245, 158, 11, 0.25)'
                 }} />
 
-                {/* Floating Depth Badge 1: Top Left */}
-                <div style={{
-                  position: 'absolute',
-                  top: 10,
-                  left: -12,
-                  zIndex: 5,
-                  background: 'rgba(255, 255, 255, 0.95)',
-                  backdropFilter: 'blur(10px)',
-                  borderRadius: 14,
-                  padding: '8px 14px',
-                  boxShadow: '0 12px 28px rgba(15, 23, 42, 0.12)',
-                  border: '1px solid #e2e8f0',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 8
-                }}>
-                  <div style={{ width: 28, height: 28, borderRadius: 8, background: '#dcfce7', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <Award size={16} color="#16a34a" />
-                  </div>
-                  <div>
-                    <div style={{ fontSize: 12, fontWeight: 800, color: '#0f172a' }}>98.4% Placement</div>
-                    <div style={{ fontSize: 10, color: '#64748b' }}>Google, Meta, TCS</div>
-                  </div>
-                </div>
-
-                {/* Floating Depth Badge 2: Top Right */}
-                <div style={{
-                  position: 'absolute',
-                  top: 24,
-                  right: -10,
-                  zIndex: 5,
-                  background: 'rgba(255, 255, 255, 0.95)',
-                  backdropFilter: 'blur(10px)',
-                  borderRadius: 14,
-                  padding: '8px 14px',
-                  boxShadow: '0 12px 28px rgba(15, 23, 42, 0.12)',
-                  border: '1px solid #e2e8f0',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 8
-                }}>
-                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#22c55e', display: 'inline-block' }} />
-                  <span style={{ fontSize: 12, fontWeight: 800, color: '#0f172a' }}>Live Mentor Q&A</span>
-                </div>
-
-                {/* Cheerful Students Cutout matching Image 1 */}
+                {/* Cheerful Students Cutout */}
                 <img
                   src="/assets/kaira_hero_students.jpg"
                   alt="Kaira Students"
@@ -512,50 +405,6 @@ export default function LandingPage({
                     filter: 'drop-shadow(0 15px 25px rgba(0,0,0,0.12))'
                   }}
                 />
-
-                {/* Joanne H. Floating Testimonial Card matching Image 1 */}
-                <div style={{
-                  position: 'absolute',
-                  bottom: -10,
-                  right: -10,
-                  zIndex: 5,
-                  background: '#ffffff',
-                  borderRadius: 18,
-                  padding: '16px 20px',
-                  maxWidth: 250,
-                  boxShadow: '0 20px 40px rgba(15, 23, 42, 0.18)',
-                  border: '1px solid #f1f5f9',
-                  transition: 'transform 0.2s'
-                }}>
-                  {/* Rating Stars & Heart */}
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-                    <div style={{ display: 'flex', gap: 2 }}>
-                      {[...Array(5)].map((_, i) => (
-                        <span key={i} style={{ color: '#f59e0b', fontSize: 14 }}>★</span>
-                      ))}
-                    </div>
-                    <span style={{
-                      background: '#ef4444',
-                      color: '#ffffff',
-                      borderRadius: '50%',
-                      width: 20,
-                      height: 20,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      fontSize: 10
-                    }}>
-                      ❤️
-                    </span>
-                  </div>
-
-                  <div style={{ fontSize: 13, fontWeight: 800, color: '#0f172a', marginBottom: 4 }}>
-                    Joanne H.
-                  </div>
-                  <p style={{ fontSize: 11, color: '#64748b', lineHeight: 1.45, margin: 0 }}>
-                    Clear, easy to use, and the courses are amazing! I love how simple it is to find what I need.
-                  </p>
-                </div>
               </div>
 
             </div>
@@ -698,10 +547,11 @@ export default function LandingPage({
                     style={{ position: 'relative' }}
                   >
                     {/* Thumbnail with overlay duration & category */}
-                    <div 
+                    <div
                       onClick={() => onViewCourse && onViewCourse(course._id)}
-                      style={{ position: 'relative', width: '100%', height: 200, cursor: 'pointer', overflow: 'hidden' }}
+                      style={{ position: 'relative', width: '100%', height: 210, cursor: 'pointer', overflow: 'hidden', background: '#0f172a' }}
                     >
+                      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(15, 23, 42, 0.7) 0%, rgba(15, 23, 42, 0.05) 50%, transparent 100%)', zIndex: 1, pointerEvents: 'none' }} />
                       <img
                         src={course.thumbnail}
                         alt={course.title}
@@ -903,454 +753,724 @@ export default function LandingPage({
         </div>
       </section>
 
-      {/* 3. UPCOMING LIVE WEBINAR SPOTLIGHT SECTION */}
-      {/* 3. UNIQUE VIP MASTERCLASS STUDIO TICKET SECTION */}
-      <section id="webinar-spotlight-section" style={{
-        padding: '90px 0',
-        background: '#f8fafc',
-        position: 'relative'
+      {/* =========================================================================
+          2.5 HOW IT WORKS: 4 SIMPLE STEPS TO CAREER MASTERY
+          ========================================================================= */}
+      <section id="how-it-works-section" style={{
+        padding: '115px 0 125px',
+        background: '#ffffff',
+        borderTop: '1px solid #e2e8f0',
+        borderBottom: '1px solid #e2e8f0',
+        position: 'relative',
+        overflow: 'hidden'
       }}>
-        <div className="container" style={{ maxWidth: 1240, margin: '0 auto', padding: '0 24px' }}>
-          
-          {/* Section Super-Header */}
-          <div style={{ textAlign: 'center', maxWidth: 700, margin: '0 auto 40px' }}>
+        {/* Ambient Subtle Radial Glow */}
+        <div style={{
+          position: 'absolute',
+          top: '15%',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          width: '85%',
+          height: 420,
+          background: 'radial-gradient(circle, rgba(37, 99, 235, 0.06) 0%, rgba(97, 218, 251, 0.03) 50%, transparent 70%)',
+          pointerEvents: 'none',
+          zIndex: 0
+        }} />
+
+        <div className="container" style={{ maxWidth: 1320, margin: '0 auto', padding: '0 24px', position: 'relative', zIndex: 1 }}>
+
+          {/* Bigger Section Header */}
+          <div style={{ textAlign: 'center', maxWidth: 840, margin: '0 auto 64px' }}>
             <div style={{
               display: 'inline-flex',
               alignItems: 'center',
               gap: 8,
-              background: 'rgba(239, 68, 68, 0.1)',
-              border: '1px solid rgba(239, 68, 68, 0.25)',
-              color: '#dc2626',
-              fontSize: 12,
-              fontWeight: 800,
-              padding: '6px 16px',
+              background: '#eff6ff',
+              border: '1.5px solid #bfdbfe',
+              color: '#1d4ed8',
+              padding: '8px 20px',
               borderRadius: 9999,
-              marginBottom: 12,
-              letterSpacing: '0.04em'
+              fontSize: 13,
+              fontWeight: 800,
+              letterSpacing: '0.04em',
+              marginBottom: 18,
+              boxShadow: '0 2px 10px rgba(37, 99, 235, 0.1)'
             }}>
-              <Flame size={15} color="#ef4444" />
-              <span>OFFICIAL FLAGSHIP MASTERCLASS • NOVEMBER 4, 2026</span>
+              <Sparkles size={16} />
+              <span>HOW IT WORKS • 4-STEP LEARNING ROADMAP</span>
             </div>
+
             <h2 style={{
-              fontSize: 'clamp(28px, 3.4vw, 42px)',
+              fontSize: 'clamp(32px, 4.4vw, 54px)',
               fontWeight: 900,
               color: '#0f172a',
               letterSpacing: '-0.03em',
-              lineHeight: 1.2
+              margin: '0 0 18px',
+              lineHeight: 1.15
             }}>
-              Exclusive VIP Masterclass Pass
+              Your Fast Track from Learner to Production Engineer
             </h2>
-            <p style={{ fontSize: 16, color: '#64748b', marginTop: 10 }}>
-              Join senior engineers and AI architects in this high-intensity 3-hour live cohort session.
+
+            <p style={{ fontSize: 18, color: '#475569', lineHeight: 1.7, margin: 0 }}>
+              Zero unnecessary theory. 100% production-grade engineering, hands-on codebases, and verifiable industry credentials.
             </p>
           </div>
 
-          {/* Luxury VIP Studio Ticket Frame */}
+          {/* 4 Grand Step Cards Grid */}
           <div style={{
-            position: 'relative',
-            background: 'linear-gradient(135deg, #090e1a 0%, #111827 50%, #0d1222 100%)',
-            borderRadius: 28,
-            boxShadow: '0 30px 70px -15px rgba(15, 23, 42, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.1), 0 0 40px rgba(79, 70, 229, 0.18)',
-            overflow: 'hidden',
-            color: '#ffffff'
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+            gap: 28,
+            position: 'relative'
           }}>
-            {/* Ambient Background Glow Effect */}
-            <div style={{
-              position: 'absolute',
-              top: -60,
-              right: -60,
-              width: 300,
-              height: 300,
-              borderRadius: '50%',
-              background: 'radial-gradient(circle, rgba(99, 102, 241, 0.25) 0%, transparent 70%)',
-              pointerEvents: 'none'
-            }} />
-            <div style={{
-              position: 'absolute',
-              bottom: -60,
-              left: -60,
-              width: 300,
-              height: 300,
-              borderRadius: '50%',
-              background: 'radial-gradient(circle, rgba(236, 72, 153, 0.18) 0%, transparent 70%)',
-              pointerEvents: 'none'
-            }} />
-
-            {/* Ticket Notch Cutouts (Simulated Perforation Edge at 65% width) */}
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'minmax(0, 1.25fr) minmax(0, 0.75fr)',
-              position: 'relative'
-            }} className="hero-grid">
-              
-              {/* LEFT PANE: Admission Ticket Main Body */}
-              <div style={{
-                padding: 'clamp(32px, 4vw, 52px)',
-                borderRight: '2px dashed rgba(255, 255, 255, 0.15)',
-                position: 'relative'
-              }}>
-                {/* Ticket Top Meta Row */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, flexWrap: 'wrap', gap: 12 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <span style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: 6,
-                      background: 'rgba(239, 68, 68, 0.2)',
-                      border: '1px solid rgba(239, 68, 68, 0.4)',
-                      color: '#f87171',
-                      fontSize: 11,
-                      fontWeight: 800,
-                      padding: '4px 12px',
-                      borderRadius: 9999
-                    }}>
-                      <span className="live-indicator-dot" style={{ width: 6, height: 6, borderRadius: '50%', background: '#ef4444' }} />
-                      LIVE INTERACTIVE
-                    </span>
-                    <span style={{ fontSize: 12, color: '#94a3b8', fontFamily: 'monospace' }}>
-                      PASS #KAIRA-VIP-8821
-                    </span>
-                  </div>
-
-                  <span style={{
-                    background: 'rgba(245, 158, 11, 0.15)',
-                    border: '1px solid rgba(245, 158, 11, 0.3)',
-                    color: '#fbbf24',
-                    fontSize: 11,
-                    fontWeight: 800,
-                    padding: '4px 10px',
-                    borderRadius: 6,
+            {[
+              {
+                step: '01',
+                title: 'Choose Your Track',
+                badge: '1st Lesson 100% Free',
+                desc: 'Browse our 25 in-demand specializations across AI Agents, Modern MERN, Cloud Kubernetes, or Cybersecurity. Sample the 1st video lesson free with no credit card required.',
+                highlight: '✨ 100% Free Video Preview',
+                color: '#2563eb',
+                bgGradient: 'linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)',
+                icon: BookOpen
+              },
+              {
+                step: '02',
+                title: 'Build Production Code',
+                badge: 'Real GitHub Repos',
+                desc: 'Code enterprise-level projects with step-by-step guidance. Build real multi-agent swarms, cloud infrastructure, and authenticated payment gateways with zero toy code.',
+                highlight: '⚡ Production-Ready Repos',
+                color: '#7c3aed',
+                bgGradient: 'linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%)',
+                icon: Code
+              },
+              {
+                step: '03',
+                title: 'Live Masterclass Mentorship',
+                badge: 'Live on Nov 4, 2026',
+                desc: 'Join senior software architects for live interactive masterclasses. Debug real deployment challenges, ask direct questions, and solve architecture design problems.',
+                highlight: '🔴 Live Mentor Q&A (Nov 4)',
+                color: '#059669',
+                bgGradient: 'linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%)',
+                icon: Video
+              },
+              {
+                step: '04',
+                title: 'Earn Verifiable Certificate',
+                badge: 'LinkedIn Verified',
+                desc: 'Receive an official, tamper-proof Certificate of Completion with a unique verification link for recruiters, plus resume portfolio review and job interview assistance.',
+                highlight: '🎓 Verifiable Digital Credential',
+                color: '#d97706',
+                bgGradient: 'linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%)',
+                icon: Award
+              }
+            ].map((item, idx) => {
+              const IconComp = item.icon;
+              return (
+                <div
+                  key={idx}
+                  style={{
+                    background: '#ffffff',
+                    border: '1.5px solid #e2e8f0',
+                    borderRadius: 22,
+                    padding: '38px 28px',
+                    position: 'relative',
                     display: 'flex',
-                    alignItems: 'center',
-                    gap: 6
-                  }}>
-                    <Zap size={13} />
-                    <span>ONLY 38 SEATS LEFT</span>
-                  </span>
-                </div>
-
-                {/* Masterclass Headline */}
-                <h3 style={{
-                  fontSize: 'clamp(26px, 3.2vw, 38px)',
-                  fontWeight: 900,
-                  lineHeight: 1.2,
-                  letterSpacing: '-0.025em',
-                  marginBottom: 14,
-                  color: '#ffffff'
-                }}>
-                  Full-Stack AI &{' '}
-                  <span style={{
-                    background: 'linear-gradient(135deg, #38bdf8 0%, #818cf8 50%, #c084fc 100%)',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent'
-                  }}>
-                    Autonomous Agents
-                  </span>{' '}
-                  Masterclass
-                </h3>
-
-                <p style={{
-                  fontSize: 15,
-                  color: '#cbd5e1',
-                  lineHeight: 1.65,
-                  marginBottom: 24,
-                  maxWidth: 620
-                }}>
-                  Build, deploy, and monetize production autonomous AI agents with real-time streaming, tool calling, and automated GST billing. Live hot-seat architecture evaluations with Dr. Elena Vance.
-                </p>
-
-                {/* Live Countdown Display Cards */}
-                <div style={{ marginBottom: 26 }}>
-                  <div style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>
-                    Live Studio Broadcast Starts In:
-                  </div>
-                  <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-                    {[
-                      { label: 'Days', val: String(timeLeft.days).padStart(2, '0') },
-                      { label: 'Hours', val: String(timeLeft.hours).padStart(2, '0') },
-                      { label: 'Minutes', val: String(timeLeft.minutes).padStart(2, '0') },
-                      { label: 'Seconds', val: String(timeLeft.seconds).padStart(2, '0') }
-                    ].map((slot, sIdx) => (
-                      <div key={sIdx} style={{
-                        background: 'rgba(255, 255, 255, 0.06)',
-                        border: '1px solid rgba(255, 255, 255, 0.12)',
-                        borderRadius: 12,
-                        padding: '10px 16px',
-                        textAlign: 'center',
-                        minWidth: 68
-                      }}>
-                        <div style={{ fontSize: 24, fontWeight: 900, color: '#38bdf8', fontFamily: 'monospace', lineHeight: 1 }}>
-                          {slot.val}
-                        </div>
-                        <div style={{ fontSize: 10, color: '#94a3b8', textTransform: 'uppercase', marginTop: 4, fontWeight: 600 }}>
-                          {slot.label}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Live Capacity Meter (Progress Bar) */}
-                <div style={{
-                  background: 'rgba(255, 255, 255, 0.05)',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
-                  borderRadius: 14,
-                  padding: '14px 18px',
-                  marginBottom: 28
-                }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8, fontSize: 13 }}>
-                    <span style={{ color: '#e2e8f0', fontWeight: 700 }}>
-                      Live Seats Status: <strong style={{ color: '#4ade80' }}>462 / 500 Claimed</strong>
-                    </span>
-                    <span style={{ color: '#f59e0b', fontWeight: 800 }}>92.4% Booked</span>
-                  </div>
-                  <div style={{
-                    width: '100%',
-                    height: 8,
-                    borderRadius: 9999,
-                    background: 'rgba(255, 255, 255, 0.12)',
-                    overflow: 'hidden',
-                    position: 'relative'
-                  }}>
+                    flexDirection: 'column',
+                    minHeight: 380,
+                    boxShadow: '0 6px 24px rgba(15, 23, 42, 0.05)',
+                    transition: 'all 0.3s ease'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'translateY(-8px)';
+                    e.currentTarget.style.boxShadow = '0 20px 40px rgba(15, 23, 42, 0.12)';
+                    e.currentTarget.style.borderColor = item.color;
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.boxShadow = '0 6px 24px rgba(15, 23, 42, 0.05)';
+                    e.currentTarget.style.borderColor = '#e2e8f0';
+                  }}
+                >
+                  {/* Step Icon and Large Number */}
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
                     <div style={{
-                      width: '92.4%',
-                      height: '100%',
-                      background: 'linear-gradient(90deg, #10b981 0%, #3b82f6 70%, #ef4444 100%)',
-                      borderRadius: 9999
-                    }} />
-                  </div>
-                </div>
-
-                {/* Quick Info Grid */}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 14, marginBottom: 32 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, color: '#e2e8f0', fontSize: 13 }}>
-                    <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(99, 102, 241, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <Calendar size={16} color="#818cf8" />
-                    </div>
-                    <div>
-                      <div style={{ fontSize: 10, color: '#94a3b8' }}>DATE</div>
-                      <div style={{ fontWeight: 700 }}>November 4, 2026</div>
-                    </div>
-                  </div>
-
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, color: '#e2e8f0', fontSize: 13 }}>
-                    <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(99, 102, 241, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <Clock size={16} color="#818cf8" />
-                    </div>
-                    <div>
-                      <div style={{ fontSize: 10, color: '#94a3b8' }}>SCHEDULE</div>
-                      <div style={{ fontWeight: 700 }}>07:00 PM IST (180 mins)</div>
-                    </div>
-                  </div>
-
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, color: '#e2e8f0', fontSize: 13 }}>
-                    <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(16, 185, 129, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <Award size={16} color="#34d399" />
-                    </div>
-                    <div>
-                      <div style={{ fontSize: 10, color: '#94a3b8' }}>CREDENTIAL</div>
-                      <div style={{ fontWeight: 700 }}>Verifiable Certificate</div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Primary Action Button */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: 18, flexWrap: 'wrap' }}>
-                  <button
-                    onClick={scrollToPaymentSection}
-                    style={{
-                      background: 'linear-gradient(135deg, #ff6b4a 0%, #ea580c 100%)',
-                      color: '#ffffff',
-                      border: 'none',
-                      padding: '16px 36px',
-                      borderRadius: 12,
-                      fontSize: 16,
-                      fontWeight: 800,
-                      cursor: 'pointer',
-                      display: 'inline-flex',
+                      width: 58,
+                      height: 58,
+                      borderRadius: 16,
+                      background: item.bgGradient,
+                      color: item.color,
+                      display: 'flex',
                       alignItems: 'center',
-                      gap: 10,
-                      boxShadow: '0 10px 30px rgba(234, 88, 12, 0.45)',
-                      transition: 'all 0.2s ease'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.transform = 'translateY(-2px) scale(1.02)';
-                      e.currentTarget.style.boxShadow = '0 14px 36px rgba(234, 88, 12, 0.6)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.transform = 'translateY(0) scale(1)';
-                      e.currentTarget.style.boxShadow = '0 10px 30px rgba(234, 88, 12, 0.45)';
-                    }}
-                  >
-                    <span>Reserve VIP Live Seat (₹499)</span>
-                    <ArrowRight size={18} />
-                  </button>
+                      justifyContent: 'center',
+                      boxShadow: '0 6px 16px rgba(0,0,0,0.06)'
+                    }}>
+                      <IconComp size={28} />
+                    </div>
 
-                  <span style={{ fontSize: 12, color: '#94a3b8' }}>
-                    ⚡ Instant Calendar Sync & Tax Invoice
-                  </span>
-                </div>
-              </div>
+                    <span style={{
+                      fontSize: 36,
+                      fontWeight: 900,
+                      color: '#cbd5e1',
+                      fontFamily: 'monospace',
+                      letterSpacing: '-0.04em'
+                    }}>
+                      {item.step}
+                    </span>
+                  </div>
 
-              {/* RIGHT PANE: Ticket Stub (Speaker & Bonus Vault) */}
-              <div style={{
-                padding: 'clamp(32px, 4vw, 44px)',
-                background: 'rgba(0, 0, 0, 0.25)',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'space-between'
-              }}>
-                <div>
-                  {/* Stub Header */}
-                  <div style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
-                    paddingBottom: 14,
-                    marginBottom: 20
+                  <span style={{
+                    display: 'inline-block',
+                    alignSelf: 'flex-start',
+                    background: item.bgGradient,
+                    color: item.color,
+                    fontSize: 12,
+                    fontWeight: 800,
+                    padding: '4px 12px',
+                    borderRadius: 9999,
+                    marginBottom: 14
                   }}>
-                    <span style={{ fontSize: 11, fontWeight: 800, color: '#a5b4fc', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
-                      Keynote Speaker & Mentor
-                    </span>
-                    <span style={{ fontSize: 10, color: '#64748b', fontFamily: 'monospace' }}>
-                      STUB SEC-A
-                    </span>
-                  </div>
+                    {item.badge}
+                  </span>
 
-                  {/* Speaker Card */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 16 }}>
-                    <div style={{ position: 'relative' }}>
-                      <img
-                        src="/assets/female_presenter_blazer.jpg"
-                        alt="Dr. Elena Vance"
-                        style={{
-                          width: 68,
-                          height: 68,
-                          borderRadius: '50%',
-                          objectFit: 'cover',
-                          border: '2.5px solid #818cf8',
-                          boxShadow: '0 4px 16px rgba(129, 140, 248, 0.4)'
-                        }}
-                      />
-                      <span style={{
-                        position: 'absolute',
-                        bottom: -2,
-                        right: -2,
-                        background: '#10b981',
-                        borderRadius: '50%',
-                        width: 18,
-                        height: 18,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        border: '2px solid #0f172a'
-                      }}>
-                        <Check size={11} color="#ffffff" />
-                      </span>
-                    </div>
+                  <h3 style={{
+                    fontSize: 21,
+                    fontWeight: 900,
+                    color: '#0f172a',
+                    margin: '0 0 12px',
+                    lineHeight: 1.3
+                  }}>
+                    {item.title}
+                  </h3>
 
-                    <div>
-                      <h4 style={{ fontSize: 18, fontWeight: 900, color: '#ffffff', margin: 0 }}>Dr. Elena Vance</h4>
-                      <p style={{ fontSize: 12, color: '#a5b4fc', margin: '3px 0 0' }}>Principal AI Systems Architect</p>
-                      <p style={{ fontSize: 11, color: '#facc15', margin: '4px 0 0', fontWeight: 700 }}>
-                        ★ 4.98 / 5.0 (3,800+ reviews)
-                      </p>
-                    </div>
-                  </div>
-
-                  <p style={{ fontSize: 12, color: '#94a3b8', lineHeight: 1.6, marginBottom: 22 }}>
-                    Over 12 years of enterprise engineering experience. Former AI Lead, trained 45,000+ engineers worldwide in LLM pipelines, autonomous multi-agent coordination, and scalable cloud monetization.
+                  <p style={{
+                    fontSize: 14.5,
+                    color: '#64748b',
+                    lineHeight: 1.65,
+                    margin: '0 0 20px',
+                    flex: 1
+                  }}>
+                    {item.desc}
                   </p>
 
-                  {/* Included Free Bonus Perks Stack */}
                   <div style={{
-                    background: 'rgba(255, 255, 255, 0.04)',
-                    border: '1px solid rgba(255, 255, 255, 0.08)',
-                    borderRadius: 16,
-                    padding: '16px 18px',
-                    marginBottom: 20
-                  }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-                      <span style={{ fontSize: 12, fontWeight: 800, color: '#facc15', display: 'flex', alignItems: 'center', gap: 6 }}>
-                        <Gift size={14} />
-                        <span>Free Bonuses Included</span>
-                      </span>
-                      <span style={{ fontSize: 11, fontWeight: 800, color: '#4ade80' }}>
-                        ₹10,996 VALUE
-                      </span>
-                    </div>
-
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, fontSize: 12, color: '#e2e8f0' }}>
-                        <CheckCircle2 size={15} color="#4ade80" style={{ flexShrink: 0, marginTop: 1 }} />
-                        <span><strong>Production Multi-Agent SaaS Starter Repo</strong> (₹4,999 Value)</span>
-                      </div>
-                      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, fontSize: 12, color: '#e2e8f0' }}>
-                        <CheckCircle2 size={15} color="#4ade80" style={{ flexShrink: 0, marginTop: 1 }} />
-                        <span><strong>100+ Enterprise System Prompts & Tool Calling</strong> (₹3,499 Value)</span>
-                      </div>
-                      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, fontSize: 12, color: '#e2e8f0' }}>
-                        <CheckCircle2 size={15} color="#4ade80" style={{ flexShrink: 0, marginTop: 1 }} />
-                        <span><strong>Official VIP WhatsApp Mastermind & Networking</strong> (₹2,498 Value)</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Ticket Barcode & Authentication Footer */}
-                <div style={{
-                  borderTop: '1px solid rgba(255, 255, 255, 0.1)',
-                  paddingTop: 16,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between'
-                }}>
-                  <div>
-                    <div style={{ fontSize: 10, color: '#64748b', letterSpacing: '0.1em', fontFamily: 'monospace' }}>
-                      |||| | ||||| || |||||| | ||| ||
-                    </div>
-                    <div style={{ fontSize: 9, color: '#94a3b8', marginTop: 4, letterSpacing: '0.05em' }}>
-                      KAIRA VERIFIED EVENT • 2026
-                    </div>
-                  </div>
-
-                  <span style={{
-                    fontSize: 10,
+                    paddingTop: 14,
+                    borderTop: '1px solid #f1f5f9',
+                    fontSize: 12.5,
                     fontWeight: 800,
-                    color: '#38bdf8',
-                    background: 'rgba(56, 189, 248, 0.12)',
-                    border: '1px solid rgba(56, 189, 248, 0.3)',
-                    padding: '4px 8px',
-                    borderRadius: 6
+                    color: item.color
                   }}>
-                    PASS ID: 8821-VIP
-                  </span>
+                    {item.highlight}
+                  </div>
                 </div>
-              </div>
+              );
+            })}
+          </div>
 
+          {/* Grand Bottom Action Strip */}
+          <div style={{
+            marginTop: 56,
+            background: 'linear-gradient(135deg, #f8fafc 0%, #eff6ff 100%)',
+            border: '1.5px solid #bfdbfe',
+            borderRadius: 24,
+            padding: '36px 44px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: 24,
+            boxShadow: '0 10px 30px rgba(37, 99, 235, 0.08)'
+          }}>
+            <div style={{ textAlign: 'left', maxWidth: 640 }}>
+              <div style={{ fontSize: 22, fontWeight: 900, color: '#0f172a', marginBottom: 6 }}>
+                Ready to explore all 25 professional career courses?
+              </div>
+              <div style={{ fontSize: 15, color: '#64748b', lineHeight: 1.5 }}>
+                Filter by AI, Full-Stack, Cloud, or Cyber Security and start learning with your 1st lesson free today.
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
+              <button
+                onClick={() => {
+                  if (onNavigateToCourses) {
+                    onNavigateToCourses();
+                  } else {
+                    const el = document.getElementById('featured-courses-section');
+                    if (el) el.scrollIntoView({ behavior: 'smooth' });
+                  }
+                }}
+                style={{
+                  background: 'linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%)',
+                  color: '#ffffff',
+                  border: 'none',
+                  padding: '16px 32px',
+                  borderRadius: 14,
+                  fontSize: 16,
+                  fontWeight: 900,
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 10,
+                  boxShadow: '0 8px 20px rgba(29, 78, 216, 0.35)',
+                  transition: 'all 0.25s ease'
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; }}
+              >
+                <BookOpen size={18} />
+                <span>Explore All 25 Courses</span>
+                <ArrowRight size={18} />
+              </button>
             </div>
           </div>
+
         </div>
       </section>
 
-      {/* 4. WEBINAR REGISTRATION & PAYMENT SECTION */}
+      {/* 3. GOOGLE CUSTOMER REVIEWS & STUDENT TESTIMONIALS (Replaces 2nd image section) */}
+      <section id="google-reviews-section" style={{ padding: '80px 0', background: '#f8fafc', borderTop: '1px solid #e2e8f0', borderBottom: '1px solid #e2e8f0' }}>
+        <div className="container" style={{ maxWidth: 1240, margin: '0 auto', padding: '0 24px' }}>
+
+          {/* Header */}
+          <div style={{ textAlign: 'center', maxWidth: 760, margin: '0 auto 48px' }}>
+            <div style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 10,
+              background: '#ffffff',
+              border: '1px solid #e2e8f0',
+              padding: '8px 20px',
+              borderRadius: 9999,
+              boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+              marginBottom: 16
+            }}>
+              {/* Google 4-Color Icon */}
+              <svg width="20" height="20" viewBox="0 0 24 24">
+                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" />
+                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
+              </svg>
+              <span style={{ fontSize: 13, fontWeight: 800, color: '#1e293b', letterSpacing: '0.02em' }}>
+                GOOGLE VERIFIED REVIEWS
+              </span>
+              <span style={{ background: '#dcfce7', color: '#16a34a', fontSize: 11, fontWeight: 800, padding: '3px 8px', borderRadius: 9999 }}>
+                4.9 / 5.0 RATED
+              </span>
+            </div>
+
+            <h2 style={{ fontSize: 'clamp(28px, 3.5vw, 42px)', fontWeight: 900, color: '#0f172a', letterSpacing: '-0.025em', margin: '0 0 14px' }}>
+              Real Stories from Google Reviews
+            </h2>
+            <p style={{ fontSize: 16, color: '#64748b', lineHeight: 1.6, margin: 0 }}>
+              Over <strong>2,850+ verified learners</strong> have transformed their software careers and landed enterprise engineering roles with Kaira Course.
+            </p>
+
+            {/* Google Rating Big Summary Badge */}
+            <div style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 16,
+              marginTop: 22,
+              background: '#ffffff',
+              padding: '12px 24px',
+              borderRadius: 16,
+              border: '1px solid #e2e8f0',
+              boxShadow: '0 4px 12px rgba(15, 23, 42, 0.04)'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{ fontSize: 26, fontWeight: 900, color: '#0f172a' }}>4.9</span>
+                <div style={{ display: 'flex', gap: 3 }}>
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} size={18} fill="#f59e0b" color="#f59e0b" />
+                  ))}
+                </div>
+              </div>
+              <div style={{ height: 26, width: 1, background: '#cbd5e1' }} />
+              <div style={{ fontSize: 13, color: '#475569', textAlign: 'left' }}>
+                Overall rating on <strong>Google Business</strong>
+                <div style={{ fontSize: 11, color: '#16a34a', fontWeight: 700 }}>✓ 100% Genuine Verified Students</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Reviews Auto-Moving Track: Left to Right (1 by 1) */}
+          <div style={{ position: 'relative', marginBottom: 40, overflow: 'hidden' }}>
+
+            {/* Controls Bar */}
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: 16,
+              padding: '0 4px',
+              flexWrap: 'wrap',
+              gap: 12
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  background: '#eff6ff',
+                  color: '#1d4ed8',
+                  border: '1px solid #bfdbfe',
+                  padding: '4px 12px',
+                  borderRadius: 9999,
+                  fontSize: 12,
+                  fontWeight: 700
+                }}>
+                  <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#22c55e', display: 'inline-block' }} />
+                  <span>1 by 1 Moving Left to Right • Hover to Pause</span>
+                </span>
+              </div>
+
+              {/* Navigation Arrows for Manual 1 by 1 Sliding */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const el = document.getElementById('reviews-moving-container');
+                    if (el) el.scrollBy({ left: -360, behavior: 'smooth' });
+                  }}
+                  style={{
+                    width: 36,
+                    height: 36,
+                    borderRadius: '50%',
+                    background: '#ffffff',
+                    border: '1.5px solid #cbd5e1',
+                    color: '#0f172a',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    boxShadow: '0 2px 6px rgba(0,0,0,0.06)',
+                    transition: 'all 0.15s'
+                  }}
+                  title="Move Left"
+                >
+                  <ChevronLeft size={18} />
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    const el = document.getElementById('reviews-moving-container');
+                    if (el) el.scrollBy({ left: 360, behavior: 'smooth' });
+                  }}
+                  style={{
+                    width: 36,
+                    height: 36,
+                    borderRadius: '50%',
+                    background: '#ffffff',
+                    border: '1.5px solid #cbd5e1',
+                    color: '#0f172a',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    boxShadow: '0 2px 6px rgba(0,0,0,0.06)',
+                    transition: 'all 0.15s'
+                  }}
+                  title="Move Right"
+                >
+                  <ChevronRight size={18} />
+                </button>
+              </div>
+            </div>
+
+            {/* Gradient edge masks */}
+            <div style={{
+              position: 'absolute',
+              top: 50,
+              bottom: 0,
+              left: 0,
+              width: 50,
+              background: 'linear-gradient(to right, #f8fafc, transparent)',
+              zIndex: 10,
+              pointerEvents: 'none'
+            }} />
+            <div style={{
+              position: 'absolute',
+              top: 50,
+              bottom: 0,
+              right: 0,
+              width: 50,
+              background: 'linear-gradient(to left, #f8fafc, transparent)',
+              zIndex: 10,
+              pointerEvents: 'none'
+            }} />
+
+            {/* Continuous Marquee Track Moving Left to Right */}
+            <div
+              id="reviews-moving-container"
+              style={{
+                overflowX: 'auto',
+                scrollbarWidth: 'none',
+                msOverflowStyle: 'none',
+                padding: '10px 4px 20px'
+              }}
+            >
+              <div className="marquee-reviews-track">
+                {[
+                  {
+                    name: 'Arun Prakash S.',
+                    role: 'Software Development Engineer at Zoho',
+                    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80',
+                    date: '3 days ago',
+                    rating: 5,
+                    title: 'Transitioned to AI Engineer within weeks!',
+                    text: 'Kaira Course is hands down the best investment for tech careers. The curriculum is 100% practical, no fluff. Within 2 weeks of completing the hands-on project portfolio, I transitioned into an AI engineering role. The ₹1 registration was super smooth with UPI!'
+                  },
+                  {
+                    name: 'Priya Dharshini',
+                    role: 'Full Stack Developer at Freshworks',
+                    avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=120&q=80',
+                    date: '1 week ago',
+                    rating: 5,
+                    title: 'Industry-grade curriculum with GST invoice',
+                    text: 'The depth of real-world architecture in this course is unmatched. Mentor support was always there to debug live deployment challenges. The GST tax invoice arrived instantly after payment. Proud to have my certificate verified on LinkedIn.'
+                  },
+                  {
+                    name: 'Venkatesh K.',
+                    role: 'Senior DevOps Engineer at Cognizant',
+                    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=120&q=80',
+                    date: '2 weeks ago',
+                    rating: 5,
+                    title: 'Fast UPI Razorpay payment & instant access',
+                    text: 'Clear, structured, and enterprise-grade. The payment checkout with Razorpay UPI was fast and safe. If you want production-level skills rather than basic theory, Kaira is the gold standard.'
+                  },
+                  {
+                    name: 'Ananya Subramanian',
+                    role: 'Cloud Solutions Associate at Amazon Web Services (AWS)',
+                    avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=120&q=80',
+                    date: '3 weeks ago',
+                    rating: 5,
+                    title: 'Helped me crack my system design interviews',
+                    text: 'I was skeptical at first about online courses, but Kaira exceeded all expectations. The code walkthroughs, microservices architecture, and hands-on drills helped me clear my system design interviews with flying colors!'
+                  },
+                  {
+                    name: 'Karthikeyan Murugan',
+                    role: 'Product Engineer at ThoughtWorks',
+                    avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=120&q=80',
+                    date: '1 month ago',
+                    rating: 5,
+                    title: 'Zero lag, HD video player, instant certificate',
+                    text: 'Genuinely impressed with the platform. No lag, high quality HD lessons, and instant customer service. Received my course completion certificate right after submitting the final capstone.'
+                  },
+                  {
+                    name: 'Divya Bharathi',
+                    role: 'AI Researcher & Tech Lead',
+                    avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=120&q=80',
+                    date: '1 month ago',
+                    rating: 5,
+                    title: 'High production value & exceptional quality',
+                    text: 'From registration to live access, everything worked seamlessly. The curriculum covers latest AI agents, streaming protocols, and backend security. Highly recommend to both freshers and working professionals.'
+                  },
+                  // Duplicate items for seamless infinite left-to-right loop
+                  {
+                    name: 'Arun Prakash S.',
+                    role: 'Software Development Engineer at Zoho',
+                    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80',
+                    date: '3 days ago',
+                    rating: 5,
+                    title: 'Transitioned to AI Engineer within weeks!',
+                    text: 'Kaira Course is hands down the best investment for tech careers. The curriculum is 100% practical, no fluff. Within 2 weeks of completing the hands-on project portfolio, I transitioned into an AI engineering role. The ₹1 registration was super smooth with UPI!'
+                  },
+                  {
+                    name: 'Priya Dharshini',
+                    role: 'Full Stack Developer at Freshworks',
+                    avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=120&q=80',
+                    date: '1 week ago',
+                    rating: 5,
+                    title: 'Industry-grade curriculum with GST invoice',
+                    text: 'The depth of real-world architecture in this course is unmatched. Mentor support was always there to debug live deployment challenges. The GST tax invoice arrived instantly after payment. Proud to have my certificate verified on LinkedIn.'
+                  },
+                  {
+                    name: 'Venkatesh K.',
+                    role: 'Senior DevOps Engineer at Cognizant',
+                    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=120&q=80',
+                    date: '2 weeks ago',
+                    rating: 5,
+                    title: 'Fast UPI Razorpay payment & instant access',
+                    text: 'Clear, structured, and enterprise-grade. The payment checkout with Razorpay UPI was fast and safe. If you want production-level skills rather than basic theory, Kaira is the gold standard.'
+                  },
+                  {
+                    name: 'Ananya Subramanian',
+                    role: 'Cloud Solutions Associate at Amazon Web Services (AWS)',
+                    avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=120&q=80',
+                    date: '3 weeks ago',
+                    rating: 5,
+                    title: 'Helped me crack my system design interviews',
+                    text: 'I was skeptical at first about online courses, but Kaira exceeded all expectations. The code walkthroughs, microservices architecture, and hands-on drills helped me clear my system design interviews with flying colors!'
+                  },
+                  {
+                    name: 'Karthikeyan Murugan',
+                    role: 'Product Engineer at ThoughtWorks',
+                    avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=120&q=80',
+                    date: '1 month ago',
+                    rating: 5,
+                    title: 'Zero lag, HD video player, instant certificate',
+                    text: 'Genuinely impressed with the platform. No lag, high quality HD lessons, and instant customer service. Received my course completion certificate right after submitting the final capstone.'
+                  },
+                  {
+                    name: 'Divya Bharathi',
+                    role: 'AI Researcher & Tech Lead',
+                    avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=120&q=80',
+                    date: '1 month ago',
+                    rating: 5,
+                    title: 'High production value & exceptional quality',
+                    text: 'From registration to live access, everything worked seamlessly. The curriculum covers latest AI agents, streaming protocols, and backend security. Highly recommend to both freshers and working professionals.'
+                  }
+                ].map((rev, rIdx) => (
+                  <div
+                    key={rIdx}
+                    style={{
+                      width: 350,
+                      flexShrink: 0,
+                      background: '#ffffff',
+                      borderRadius: 18,
+                      padding: '24px 26px',
+                      border: '1.5px solid #e2e8f0',
+                      boxShadow: '0 4px 18px rgba(15, 23, 42, 0.04)',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'space-between',
+                      transition: 'all 0.25s ease'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.transform = 'translateY(-4px)';
+                      e.currentTarget.style.boxShadow = '0 12px 28px rgba(15, 23, 42, 0.12)';
+                      e.currentTarget.style.borderColor = '#93c5fd';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.transform = 'translateY(0)';
+                      e.currentTarget.style.boxShadow = '0 4px 18px rgba(15, 23, 42, 0.04)';
+                      e.currentTarget.style.borderColor = '#e2e8f0';
+                    }}
+                  >
+                    <div>
+                      {/* Top: Stars & Google Tag */}
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                        <div style={{ display: 'flex', gap: 3 }}>
+                          {[...Array(rev.rating)].map((_, s) => (
+                            <Star key={s} size={16} fill="#f59e0b" color="#f59e0b" />
+                          ))}
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: '#64748b', fontWeight: 600 }}>
+                          <svg width="14" height="14" viewBox="0 0 24 24">
+                            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" />
+                            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
+                          </svg>
+                          <span>Google</span>
+                          <span>•</span>
+                          <span>{rev.date}</span>
+                        </div>
+                      </div>
+
+                      {/* Title & Review Text */}
+                      <h4 style={{ fontSize: 15.5, fontWeight: 800, color: '#0f172a', margin: '0 0 8px', lineHeight: 1.4 }}>
+                        "{rev.title}"
+                      </h4>
+                      <p style={{ fontSize: 13.5, color: '#475569', lineHeight: 1.6, margin: '0 0 16px' }}>
+                        {rev.text}
+                      </p>
+                    </div>
+
+                    {/* Reviewer Details */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12, paddingTop: 14, borderTop: '1px solid #f1f5f9' }}>
+                      <img
+                        src={rev.avatar}
+                        alt={rev.name}
+                        style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover' }}
+                      />
+                      <div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                          <span style={{ fontSize: 13.5, fontWeight: 800, color: '#0f172a' }}>{rev.name}</span>
+                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 2, background: '#eff6ff', color: '#1d4ed8', fontSize: 10, fontWeight: 800, padding: '1px 6px', borderRadius: 9999 }}>
+                            <CheckCircle2 size={11} color="#1d4ed8" /> Verified
+                          </span>
+                        </div>
+                        <div style={{ fontSize: 11.5, color: '#64748b', marginTop: 2 }}>{rev.role}</div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Trust Guarantee Strip */}
+          <div style={{
+            background: '#ffffff',
+            borderRadius: 16,
+            border: '1px solid #e2e8f0',
+            padding: '20px 28px',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            gap: 16
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <ShieldCheck size={24} color="#16a34a" />
+              <div>
+                <div style={{ fontSize: 14, fontWeight: 800, color: '#0f172a' }}>
+                  100% Genuine Student Success Stories
+                </div>
+                <div style={{ fontSize: 12, color: '#64748b' }}>
+                  Verified by Google Customer Reviews & LinkedIn Professional Certifications
+                </div>
+              </div>
+            </div>
+
+            <button
+              onClick={() => {
+                const el = document.getElementById('registration-payment-section');
+                if (el) el.scrollIntoView({ behavior: 'smooth' });
+              }}
+              style={{
+                background: '#0056D2',
+                color: '#ffffff',
+                border: 'none',
+                padding: '10px 22px',
+                borderRadius: 10,
+                fontSize: 13,
+                fontWeight: 700,
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 8
+              }}
+            >
+              <span>Register for Kaira Course (₹1)</span>
+              <ArrowRight size={15} />
+            </button>
+          </div>
+
+        </div>
+      </section>
+
       <section id="registration-payment-section" style={{ padding: '80px 0', background: '#f8fafc' }}>
         <div className="container" style={{ maxWidth: 1240, margin: '0 auto', padding: '0 24px' }}>
           <div style={{ textAlign: 'center', maxWidth: 680, margin: '0 auto 48px' }}>
-            <span style={{ fontSize: 12, fontWeight: 800, color: '#4f46e5', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-              Instant Registration & Verification
+            <span style={{ fontSize: 12, fontWeight: 800, color: '#0056D2', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+              Official Course Registration
             </span>
             <h2 style={{ fontSize: 32, fontWeight: 800, color: '#0f172a', letterSpacing: '-0.02em', marginTop: 6 }}>
-              Reserve Your VIP Webinar Seat
+              Register for Kaira Course
             </h2>
             <p style={{ fontSize: 15, color: '#64748b', marginTop: 8 }}>
-              Get immediate calendar synchronization, WhatsApp community access, and legal GST invoice.
+              Enter your details to register. On the next screen, you will be able to complete your ₹1 UPI payment.
             </p>
           </div>
 
           <RegistrationForm
             webinar={webinar}
+            onRegisterSuccess={onRegisterSuccess}
             onPaymentSuccess={onPaymentSuccess}
           />
         </div>
@@ -1417,7 +1537,7 @@ const defaultFallbackCourses = [
     category: 'AI & Agents',
     price: 499,
     originalPrice: 2999,
-    thumbnail: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80',
+    thumbnail: '/images/course_ai.png',
     badge: 'Bestseller',
     rating: 4.95,
     reviewsCount: 3820,
@@ -1432,7 +1552,7 @@ const defaultFallbackCourses = [
     category: 'Full-Stack Development',
     price: 599,
     originalPrice: 3499,
-    thumbnail: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=800&q=80',
+    thumbnail: '/images/course_mern.png',
     badge: 'Hot & New',
     rating: 4.88,
     reviewsCount: 2150,
@@ -1447,7 +1567,7 @@ const defaultFallbackCourses = [
     category: 'Cloud & DevOps',
     price: 699,
     originalPrice: 3999,
-    thumbnail: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=800&q=80',
+    thumbnail: '/images/course_cloud_fullstack.png',
     badge: 'Highest Rated',
     rating: 4.96,
     reviewsCount: 1680,
@@ -1462,7 +1582,7 @@ const defaultFallbackCourses = [
     category: 'UI/UX Design',
     price: 449,
     originalPrice: 2499,
-    thumbnail: 'https://images.unsplash.com/photo-1581291518857-4e27b48ff24e?auto=format&fit=crop&w=800&q=80',
+    thumbnail: '/images/course_uiux_agency.png',
     badge: 'Bestseller',
     rating: 4.89,
     reviewsCount: 2450,
@@ -1477,7 +1597,7 @@ const defaultFallbackCourses = [
     category: 'AI & Agents',
     price: 649,
     originalPrice: 3799,
-    thumbnail: 'https://images.unsplash.com/photo-1677442136019-21780ecad995?auto=format&fit=crop&w=800&q=80',
+    thumbnail: '/images/course_rag_uiux.png',
     badge: 'Hot & New',
     rating: 4.93,
     reviewsCount: 1890,
@@ -1492,7 +1612,7 @@ const defaultFallbackCourses = [
     category: 'Cyber Security',
     price: 549,
     originalPrice: 2999,
-    thumbnail: 'https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&w=800&q=80',
+    thumbnail: '/images/course_cybersecurity.png',
     badge: 'Featured',
     rating: 4.87,
     reviewsCount: 1420,

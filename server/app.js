@@ -21,8 +21,8 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization', 'x-admin-token']
 }));
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Health and Status
 app.get('/api/health', (req, res) => {

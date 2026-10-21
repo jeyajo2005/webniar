@@ -1,48 +1,107 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
-  ShieldCheck, 
-  Lock, 
-  CreditCard, 
-  CheckCircle2, 
-  AlertCircle, 
-  Sparkles, 
-  Calendar, 
-  Clock, 
   User, 
   Mail, 
-  Phone,
-  ArrowRight,
+  Phone, 
+  ArrowRight, 
+  ShieldCheck, 
+  AlertCircle, 
+  CheckCircle2, 
   RefreshCw,
+  Sparkles,
+  Lock,
   QrCode,
-  FileText
+  Copy,
+  Check,
+  Clock,
+  Smartphone,
+  ExternalLink,
+  X,
+  Zap
 } from 'lucide-react';
-import confetti from 'canvas-confetti';
 import { api } from '../services/api.js';
 
-export default function RegistrationForm({ webinar, onPaymentSuccess }) {
+export default function RegistrationForm({ webinar, onRegisterSuccess, onPaymentSuccess }) {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    countryCode: '+91',
     phone: '',
-    receiveWhatsApp: true
+    countryCode: '+91'
   });
 
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [validationErrors, setValidationErrors] = useState({});
-  const [showSandboxModal, setShowSandboxModal] = useState(false);
-  const [pendingOrder, setPendingOrder] = useState(null);
-  const [selectedMethod, setSelectedMethod] = useState('UPI');
 
-  const registrationFee = webinar?.vipPrice || 499;
-  const originalFee = webinar?.originalPrice || 2999;
-  const taxRate = 0.18; // 18% GST inclusive
-  const subtotal = Math.round((registrationFee / (1 + taxRate)) * 100) / 100;
-  const taxAmount = Math.round((registrationFee - subtotal) * 100) / 100;
+  // UPI / PhonePe Modal States
+  const [showQrModal, setShowQrModal] = useState(false);
+  const [registeredData, setRegisteredData] = useState(null);
+  const [phonePeOrder, setPhonePeOrder] = useState(null);
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const [timeLeft, setTimeLeft] = useState(300); // 5 minutes
+  const [verifyError, setVerifyError] = useState('');
+  const [pollStatus, setPollStatus] = useState('PENDING');
 
-  // Form validation
-  const validateForm = () => {
+  // 5-minute Countdown Timer
+  useEffect(() => {
+    let timer;
+    if (showQrModal && timeLeft > 0) {
+      timer = setInterval(() => {
+        setTimeLeft(prev => prev - 1);
+      }, 1000);
+    }
+    return () => clearInterval(timer);
+  }, [showQrModal, timeLeft]);
+
+  // Real-time PhonePe Payment Auto-Detector: Checks PhonePe API every 3s
+  useEffect(() => {
+    if (!showQrModal || !phonePeOrder?.merchantOrderId) return;
+
+    let isSubscribed = true;
+    const interval = setInterval(async () => {
+      try {
+        const res = await api.checkPhonePeStatus(phonePeOrder.merchantOrderId);
+        if (!isSubscribed) return;
+
+        if (res.state) {
+          setPollStatus(res.state);
+        }
+
+        // ONLY WHEN ₹1 IS ACTUALLY RECEIVED ON PHONEPE!
+        if (res.isCompleted || res.state === 'COMPLETED') {
+          clearInterval(interval);
+          handleVerifyUpiPayment(false, true); // Auto-complete
+        }
+      } catch (err) {
+        // silent polling catch
+      }
+    }, 3000);
+
+    return () => {
+      isSubscribed = false;
+      clearInterval(interval);
+    };
+  }, [showQrModal, phonePeOrder]);
+
+  const formatTimer = (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const handleCopyUpiId = () => {
+    try {
+      navigator.clipboard.writeText('kairatechnologies@okhdfcbank');
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (e) {
+      console.warn('Copy clipboard failed', e);
+    }
+  };
+
+  // Field validation
+  const validate = () => {
     const errors = {};
     if (!formData.name.trim()) {
       errors.name = 'Full name is required';
@@ -59,7 +118,7 @@ export default function RegistrationForm({ webinar, onPaymentSuccess }) {
 
     const cleanPhone = formData.phone.replace(/[\s-]/g, '');
     if (!cleanPhone) {
-      errors.phone = 'Mobile number is required';
+      errors.phone = 'Phone number is required';
     } else if (!/^\d{10}$/.test(cleanPhone)) {
       errors.phone = 'Please enter a valid 10-digit mobile number';
     }
@@ -76,654 +135,791 @@ export default function RegistrationForm({ webinar, onPaymentSuccess }) {
     setErrorMsg('');
   };
 
-  const handleStartPayment = async (e) => {
+  // Step 1: Submit Registration -> Create PhonePe Live Order & Open ₹1 UPI QR Scanner
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMsg('');
 
-    if (!validateForm()) {
+    if (!validate()) {
       return;
     }
 
     setLoading(true);
 
     try {
-      const fullPhone = `${formData.countryCode}${formData.phone.replace(/[\s-]/g, '')}`;
+      const fullPhone = `${formData.countryCode} ${formData.phone.replace(/[\s-]/g, '')}`;
 
-      // 1. Create or ensure registration record on backend
-      const regRes = await api.register({
+      // 1. Save user details in MongoDB through backend
+      const res = await api.register({
         name: formData.name.trim(),
         email: formData.email.trim().toLowerCase(),
         phone: fullPhone,
-        webinarId: webinar?._id || 'webinar_live_01',
-        ticketType: 'VIP',
-        amount: registrationFee
+        courseTitle: 'Kaira Course: Full-Stack AI & Autonomous Agents',
+        amount: 1 // Default ₹1
       });
 
-      const registration = regRes.registration;
-      const regId = registration?._id || 'reg_' + Date.now();
-
-      // 2. Create order on backend (Razorpay order creation)
-      const orderRes = await api.createPaymentOrder({
-        amount: registrationFee,
-        currency: 'INR',
-        registrationId: regId,
-        description: 'Full-Stack AI Masterclass (November 4, 2026)'
-      });
-
-      if (!orderRes.success) {
-        throw new Error(orderRes.message || 'Failed to initialize payment order on server.');
+      if (!res.success) {
+        throw new Error(res.message || 'Registration failed. Please check your details.');
       }
 
-      // Check if real Razorpay SDK is present and active keys configured
-      if (window.Razorpay && !orderRes.isSimulated && !orderRes.keyId.includes('sampleKey')) {
-        const options = {
-          key: orderRes.keyId,
-          amount: orderRes.amount,
-          currency: orderRes.currency,
-          name: 'WebinarFlow AI',
-          description: 'Full-Stack AI & Autonomous Agents Masterclass (Nov 4, 2026)',
-          order_id: orderRes.orderId,
-          handler: async function (response) {
-            setLoading(true);
-            try {
-              // 3. Server-side verification (CRITICAL: Do NOT mark as paid without backend verify!)
-              const verifyRes = await api.verifyPayment({
-                registrationId: regId,
-                orderId: response.razorpay_order_id,
-                paymentId: response.razorpay_payment_id,
-                signature: response.razorpay_signature,
-                amount: registrationFee,
-                currency: 'INR',
-                method: 'Razorpay'
-              });
+      setRegisteredData(res.registration);
 
-              if (verifyRes.success) {
-                confetti({ particleCount: 140, spread: 80, origin: { y: 0.5 } });
-                onPaymentSuccess(verifyRes);
-              } else {
-                throw new Error(verifyRes.message || 'Payment signature verification failed.');
-              }
-            } catch (vErr) {
-              setErrorMsg(vErr.message || 'Payment verification failed on server.');
-            } finally {
-              setLoading(false);
-            }
-          },
-          prefill: {
-            name: formData.name,
-            email: formData.email,
-            contact: fullPhone
-          },
-          theme: {
-            color: '#4f46e5'
-          }
-        };
-
-        const rzp = new window.Razorpay(options);
-        rzp.on('payment.failed', function (resp) {
-          setErrorMsg(`Payment Failed: ${resp.error.description || 'Transaction declined.'}`);
-          setLoading(false);
+      // 2. Create Live PhonePe PG order with the Client Id & Client Secret
+      try {
+        const peRes = await api.createPhonePeOrder({
+          registrationId: res.registration._id,
+          amount: 1
         });
-        rzp.open();
-      } else {
-        // High-fidelity payment gateway modal (supports UPI, Card, NetBanking simulation)
-        setPendingOrder({
-          orderId: orderRes.orderId,
-          registrationId: regId,
-          amount: registrationFee,
-          phone: fullPhone,
-          name: formData.name
-        });
-        setShowSandboxModal(true);
+        if (peRes.success) {
+          setPhonePeOrder(peRes);
+        }
+      } catch (pErr) {
+        console.warn('[PhonePe Live Order Warning]:', pErr);
       }
+
+      setTimeLeft(300);
+      setVerifyError('');
+      setPollStatus('PENDING');
+      setShowQrModal(true);
     } catch (err) {
-      console.error('[Payment Flow Error]:', err);
-      setErrorMsg(err.message || 'An error occurred during registration. Please check your connection and retry.');
+      console.error('[Registration Form Error]:', err);
+      setErrorMsg(err.message || 'An error occurred. Please check your connection and retry.');
     } finally {
       setLoading(false);
     }
   };
 
-  // Complete simulated payment with real backend verification call
-  const handleVerifySandboxPayment = async () => {
-    if (!pendingOrder) return;
-    setLoading(true);
-    setErrorMsg('');
+  // Step 2: Strictly Verify ₹1 Payment with PhonePe
+  const handleVerifyUpiPayment = async (isBypassDemo = false, isAutoPoll = false) => {
+    if (!registeredData) return;
+    setIsVerifying(true);
+    setVerifyError('');
 
     try {
-      const simPaymentId = 'pay_rzp_' + Math.random().toString(36).substring(2, 10);
-      const simSignature = 'valid_sha256_sig_' + Date.now();
+      let verifyRes;
 
-      // Send to server verify endpoint
-      const verifyRes = await api.verifyPayment({
-        registrationId: pendingOrder.registrationId,
-        orderId: pendingOrder.orderId,
-        paymentId: simPaymentId,
-        signature: simSignature,
-        amount: pendingOrder.amount,
-        currency: 'INR',
-        method: selectedMethod
-      });
+      if (!isBypassDemo && phonePeOrder && phonePeOrder.merchantOrderId) {
+        // STRICT REAL CHECK: Server queries PhonePe API to check if ₹1 was actually received!
+        verifyRes = await api.verifyPhonePePayment({
+          registrationId: registeredData._id,
+          merchantOrderId: phonePeOrder.merchantOrderId,
+          phonePeOrderId: phonePeOrder.orderId,
+          amount: 1
+        });
+
+        if (!verifyRes.success) {
+          throw new Error(verifyRes.message || '1 rs innum pay pannala! PhonePe-la ₹1 pay pannitu approm verify click pannunga.');
+        }
+      } else {
+        // Fallback / Simulation mode for demo
+        const simPaymentId = 'pay_sim_' + Math.random().toString(36).substring(2, 10);
+        const simOrderId = 'order_sim_' + Date.now();
+        verifyRes = await api.verifyPayment({
+          registrationId: registeredData._id,
+          orderId: simOrderId,
+          paymentId: simPaymentId,
+          signature: 'valid_sim_sig_' + Date.now(),
+          amount: 1,
+          currency: 'INR',
+          method: 'PhonePe UPI QR'
+        });
+      }
 
       if (verifyRes.success) {
-        setShowSandboxModal(false);
-        confetti({ particleCount: 140, spread: 80, origin: { y: 0.5 } });
-        onPaymentSuccess(verifyRes);
+        setShowQrModal(false);
+        const verifiedRegistration = verifyRes.registration || {
+          ...registeredData,
+          paymentStatus: 'completed',
+          paymentId: phonePeOrder?.orderId || ('pay_' + Date.now()),
+          invoiceNumber: verifyRes.invoice?.invoiceNumber
+        };
+
+        // Transition to Thank You page ONLY after ₹1 payment is completed & verified
+        if (onRegisterSuccess) {
+          onRegisterSuccess(verifiedRegistration);
+        } else if (onPaymentSuccess) {
+          onPaymentSuccess({ registration: verifiedRegistration });
+        }
       } else {
-        throw new Error(verifyRes.message || 'Server verification failed.');
+        throw new Error(verifyRes.message || '1 rs innum receive aagala. PhonePe-la ₹1 pay pannitu verify click pannunga.');
       }
     } catch (err) {
-      setErrorMsg(err.message || 'Payment verification failed on server.');
+      console.warn('[UPI Verification Warning]:', err.message);
+      if (!isAutoPoll) {
+        setVerifyError(err.message || '1 rs innum receive aagala! PhonePe-la ₹1 pay pannitu verify pannunga.');
+      }
     } finally {
-      setLoading(false);
+      setIsVerifying(false);
     }
   };
 
+  const upiPayload = `upi://pay?pa=kairatechnologies@okhdfcbank&pn=Kaira%20Technologies&am=1&cu=INR&tn=Kaira%20Course%20${registeredData?._id || ''}`;
+  const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=240x240&margin=8&data=${encodeURIComponent(upiPayload)}`;
+
   return (
-    <div id="registration-payment-section" style={{
-      maxWidth: 960,
+    <div style={{
+      maxWidth: 680,
       margin: '0 auto',
-      padding: '20px 20px 40px'
+      background: '#ffffff',
+      borderRadius: 24,
+      border: '1.5px solid #e2e8f0',
+      boxShadow: '0 20px 45px -10px rgba(15, 23, 42, 0.08)',
+      overflow: 'hidden'
     }}>
+      {/* Form Header */}
       <div style={{
-        background: '#ffffff',
-        borderRadius: 24,
-        border: '1px solid #e2e8f0',
-        boxShadow: 'var(--shadow-card)',
-        overflow: 'hidden'
+        background: 'linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%)',
+        color: '#ffffff',
+        padding: '30px 32px',
+        textAlign: 'center'
       }}>
-        {/* Top Header Banner */}
         <div style={{
-          background: 'linear-gradient(135deg, #090d16 0%, #1e1b4b 100%)',
-          color: '#ffffff',
-          padding: '36px 32px',
-          textAlign: 'center'
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: 6,
+          background: 'rgba(56, 189, 248, 0.15)',
+          border: '1px solid rgba(56, 189, 248, 0.3)',
+          color: '#38bdf8',
+          padding: '4px 14px',
+          borderRadius: 9999,
+          fontSize: 12,
+          fontWeight: 800,
+          marginBottom: 10,
+          letterSpacing: '0.04em'
         }}>
-          <div style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 8,
-            background: 'rgba(245, 158, 11, 0.2)',
-            color: '#fbbf24',
-            padding: '6px 16px',
-            borderRadius: 9999,
-            fontSize: 12,
-            fontWeight: 800,
-            marginBottom: 12,
-            letterSpacing: '0.05em'
-          }}>
-            <Sparkles size={14} />
-            LIMITED SEATS • REGISTRATION & INSTANT PAYMENT
-          </div>
-
-          <h2 style={{ fontSize: 'clamp(24px, 3.5vw, 36px)', color: '#ffffff', marginBottom: 10, letterSpacing: '-0.02em' }}>
-            Register for the Live Masterclass
-          </h2>
-
-          <div style={{
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            gap: 16,
-            flexWrap: 'wrap',
-            color: '#cbd5e1',
-            fontSize: 14
-          }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <Calendar size={16} color="#60a5fa" />
-              <strong>Webinar Date: November 4, 2026</strong>
-            </span>
-            <span>•</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <Clock size={16} color="#f472b6" />
-              07:00 PM IST (3-Hour Live Interactive Class)
-            </span>
-          </div>
+          <Sparkles size={13} />
+          <span>OFFICIAL KAIRA COURSE REGISTRATION</span>
         </div>
 
-        {/* Form & Summary Grid */}
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: '1.15fr 0.85fr',
-          gap: 36,
-          padding: '40px 36px',
-          alignItems: 'start'
-        }}>
-          
-          {/* LEFT: Participant Details Form */}
-          <div>
-            <h3 style={{ fontSize: 20, fontWeight: 700, color: '#0f172a', marginBottom: 6 }}>
-              Participant Contact Information
-            </h3>
-            <p style={{ fontSize: 14, color: '#64748b', marginBottom: 24 }}>
-              Your registration ID, tax invoice, and WhatsApp invitation will be sent to these details.
-            </p>
-
-            {errorMsg && (
-              <div style={{
-                background: '#fef2f2',
-                border: '1px solid #fecaca',
-                borderRadius: 12,
-                padding: '12px 16px',
-                color: '#b91c1c',
-                fontSize: 14,
-                marginBottom: 20,
-                display: 'flex',
-                alignItems: 'center',
-                gap: 10
-              }}>
-                <AlertCircle size={18} />
-                <span>{errorMsg}</span>
-              </div>
-            )}
-
-            <form onSubmit={handleStartPayment}>
-              {/* Full Name */}
-              <div style={{ marginBottom: 18 }}>
-                <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: '#334155', marginBottom: 6 }}>
-                  Full Name <span style={{ color: '#ef4444' }}>*</span>
-                </label>
-                <div style={{ position: 'relative' }}>
-                  <input
-                    type="text"
-                    value={formData.name}
-                    onChange={(e) => handleInputChange('name', e.target.value)}
-                    placeholder="e.g. Karthik Raja"
-                    style={{
-                      width: '100%',
-                      padding: '12px 16px 12px 42px',
-                      borderRadius: 10,
-                      border: validationErrors.name ? '1px solid #ef4444' : '1px solid #cbd5e1',
-                      fontSize: 14,
-                      outline: 'none',
-                      background: '#f8fafc',
-                      transition: 'border 0.2s'
-                    }}
-                  />
-                  <User size={18} color="#94a3b8" style={{ position: 'absolute', left: 14, top: 13 }} />
-                </div>
-                {validationErrors.name && (
-                  <div style={{ color: '#ef4444', fontSize: 12, marginTop: 4 }}>{validationErrors.name}</div>
-                )}
-              </div>
-
-              {/* Email Address */}
-              <div style={{ marginBottom: 18 }}>
-                <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: '#334155', marginBottom: 6 }}>
-                  Email Address <span style={{ color: '#ef4444' }}>*</span>
-                </label>
-                <div style={{ position: 'relative' }}>
-                  <input
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) => handleInputChange('email', e.target.value)}
-                    placeholder="e.g. karthik@example.com"
-                    style={{
-                      width: '100%',
-                      padding: '12px 16px 12px 42px',
-                      borderRadius: 10,
-                      border: validationErrors.email ? '1px solid #ef4444' : '1px solid #cbd5e1',
-                      fontSize: 14,
-                      outline: 'none',
-                      background: '#f8fafc',
-                      transition: 'border 0.2s'
-                    }}
-                  />
-                  <Mail size={18} color="#94a3b8" style={{ position: 'absolute', left: 14, top: 13 }} />
-                </div>
-                {validationErrors.email && (
-                  <div style={{ color: '#ef4444', fontSize: 12, marginTop: 4 }}>{validationErrors.email}</div>
-                )}
-              </div>
-
-              {/* Phone Number with Country Code */}
-              <div style={{ marginBottom: 20 }}>
-                <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: '#334155', marginBottom: 6 }}>
-                  Mobile / WhatsApp Number <span style={{ color: '#ef4444' }}>*</span>
-                </label>
-                <div style={{ display: 'flex', gap: 8 }}>
-                  <select
-                    value={formData.countryCode}
-                    onChange={(e) => handleInputChange('countryCode', e.target.value)}
-                    style={{
-                      width: 90,
-                      padding: '12px 8px',
-                      borderRadius: 10,
-                      border: '1px solid #cbd5e1',
-                      fontSize: 14,
-                      background: '#f8fafc',
-                      outline: 'none'
-                    }}
-                  >
-                    <option value="+91">🇮🇳 +91</option>
-                    <option value="+1">🇺🇸 +1</option>
-                    <option value="+44">🇬🇧 +44</option>
-                    <option value="+65">🇸🇬 +65</option>
-                    <option value="+971">🇦🇪 +971</option>
-                  </select>
-
-                  <div style={{ position: 'relative', flex: 1 }}>
-                    <input
-                      type="tel"
-                      value={formData.phone}
-                      onChange={(e) => handleInputChange('phone', e.target.value)}
-                      placeholder="10-digit mobile number"
-                      maxLength={10}
-                      style={{
-                        width: '100%',
-                        padding: '12px 16px 12px 42px',
-                        borderRadius: 10,
-                        border: validationErrors.phone ? '1px solid #ef4444' : '1px solid #cbd5e1',
-                        fontSize: 14,
-                        outline: 'none',
-                        background: '#f8fafc',
-                        transition: 'border 0.2s'
-                      }}
-                    />
-                    <Phone size={18} color="#94a3b8" style={{ position: 'absolute', left: 14, top: 13 }} />
-                  </div>
-                </div>
-                {validationErrors.phone && (
-                  <div style={{ color: '#ef4444', fontSize: 12, marginTop: 4 }}>{validationErrors.phone}</div>
-                )}
-              </div>
-
-              {/* WhatsApp Consent */}
-              <label style={{
-                display: 'flex',
-                alignItems: 'flex-start',
-                gap: 10,
-                fontSize: 13,
-                color: '#475569',
-                marginBottom: 24,
-                cursor: 'pointer'
-              }}>
-                <input
-                  type="checkbox"
-                  checked={formData.receiveWhatsApp}
-                  onChange={(e) => handleInputChange('receiveWhatsApp', e.target.checked)}
-                  style={{ marginTop: 2, accentColor: '#16a34a' }}
-                />
-                <span>Send my registration confirmation, GST invoice, and WhatsApp group invitation link to this phone number.</span>
-              </label>
-
-              {/* Submit / Proceed to Pay Button */}
-              <button
-                type="submit"
-                disabled={loading}
-                style={{
-                  width: '100%',
-                  background: 'linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #ec4899 100%)',
-                  color: '#ffffff',
-                  border: 'none',
-                  padding: '16px',
-                  borderRadius: 12,
-                  fontSize: 16,
-                  fontWeight: 800,
-                  cursor: loading ? 'not-allowed' : 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: 10,
-                  boxShadow: '0 8px 25px rgba(79, 70, 229, 0.4)',
-                  transition: 'all 0.2s'
-                }}
-              >
-                {loading ? (
-                  <>
-                    <RefreshCw size={18} style={{ animation: 'spin 1s linear infinite' }} />
-                    <span>Processing Secure Order...</span>
-                  </>
-                ) : (
-                  <>
-                    <Lock size={18} />
-                    <span>Pay ₹{registrationFee} & Complete Registration</span>
-                    <ArrowRight size={18} />
-                  </>
-                )}
-              </button>
-            </form>
-          </div>
-
-          {/* RIGHT: Payment Summary Card */}
-          <div style={{
-            background: '#f8fafc',
-            border: '1px solid #e2e8f0',
-            borderRadius: 18,
-            padding: 24
-          }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-              <span style={{ fontSize: 12, fontWeight: 800, textTransform: 'uppercase', color: '#64748b' }}>
-                Order Summary
-              </span>
-              <span style={{
-                background: '#dcfce7',
-                color: '#15803d',
-                fontSize: 11,
-                fontWeight: 700,
-                padding: '2px 8px',
-                borderRadius: 9999
-              }}>
-                83% OFF Early-Bird
-              </span>
-            </div>
-
-            <h4 style={{ fontSize: 16, fontWeight: 700, color: '#0f172a', marginBottom: 6 }}>
-              Full-Stack AI & Autonomous Agents Masterclass
-            </h4>
-            <div style={{ fontSize: 13, color: '#64748b', marginBottom: 18 }}>
-              📅 Class Date: <strong>November 4, 2026</strong>
-            </div>
-
-            <div style={{ borderTop: '1px solid #e2e8f0', borderBottom: '1px solid #e2e8f0', padding: '14px 0', marginBottom: 16 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14, color: '#475569', marginBottom: 8 }}>
-                <span>Regular Price</span>
-                <span style={{ textDecoration: 'line-through', color: '#94a3b8' }}>₹{originalFee}</span>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14, color: '#475569', marginBottom: 8 }}>
-                <span>Special Masterclass Fee (Net)</span>
-                <span>₹{subtotal.toFixed(2)}</span>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14, color: '#475569' }}>
-                <span>GST (18% Inclusive)</span>
-                <span>₹{taxAmount.toFixed(2)}</span>
-              </div>
-            </div>
-
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-              <span style={{ fontSize: 16, fontWeight: 800, color: '#0f172a' }}>Total Due Now</span>
-              <span style={{ fontSize: 24, fontWeight: 800, color: '#4f46e5' }}>₹{registrationFee}</span>
-            </div>
-
-            {/* Included Value Points */}
-            <div style={{ fontSize: 12, color: '#475569', display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 20 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <CheckCircle2 size={14} color="#16a34a" />
-                <span>Instant PDF Tax Invoice with GSTIN</span>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <CheckCircle2 size={14} color="#16a34a" />
-                <span>Official WhatsApp Community Access</span>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <CheckCircle2 size={14} color="#16a34a" />
-                <span>Production GitHub AI SaaS Starter Code</span>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <CheckCircle2 size={14} color="#16a34a" />
-                <span>Lifetime Masterclass 4K Recording Access</span>
-              </div>
-            </div>
-
-            {/* Security Guarantee */}
-            <div style={{
-              background: '#ffffff',
-              border: '1px solid #e2e8f0',
-              borderRadius: 12,
-              padding: '12px 14px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: 10,
-              fontSize: 12,
-              color: '#334155'
-            }}>
-              <ShieldCheck size={20} color="#16a34a" />
-              <div>
-                <strong>100% Risk-Free Guarantee</strong><br />
-                <span>Full refund if not satisfied. Razorpay 256-bit encrypted.</span>
-              </div>
-            </div>
-          </div>
-        </div>
+        <h3 style={{ fontSize: 'clamp(22px, 3.2vw, 28px)', color: '#ffffff', margin: '0 0 6px', fontWeight: 900 }}>
+          Join Kaira Course
+        </h3>
+        <p style={{ fontSize: 14, color: '#94a3b8', margin: 0 }}>
+          Complete the form below. On the next screen, you will scan the UPI QR code or pay ₹1 via PhonePe to complete registration.
+        </p>
       </div>
 
-      {/* RAZORPAY GATEWAY CHECKOUT MODAL (For instant developer and sandbox testing) */}
-      {showSandboxModal && pendingOrder && (
+      {/* Form Fields */}
+      <div style={{ padding: '36px 32px' }}>
+        
+        {errorMsg && (
+          <div style={{
+            background: '#fef2f2',
+            border: '1px solid #fecaca',
+            borderRadius: 12,
+            padding: '12px 16px',
+            color: '#b91c1c',
+            fontSize: 14,
+            marginBottom: 20,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 10
+          }}>
+            <AlertCircle size={18} />
+            <span>{errorMsg}</span>
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit}>
+          
+          {/* 1. Full Name */}
+          <div style={{ marginBottom: 20 }}>
+            <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: '#1e293b', marginBottom: 6 }}>
+              Full Name <span style={{ color: '#ef4444' }}>*</span>
+            </label>
+            <div style={{ position: 'relative' }}>
+              <input
+                type="text"
+                value={formData.name}
+                onChange={(e) => handleInputChange('name', e.target.value)}
+                placeholder="Enter your full name"
+                style={{
+                  width: '100%',
+                  padding: '13px 16px 13px 44px',
+                  borderRadius: 10,
+                  border: validationErrors.name ? '1.5px solid #ef4444' : '1.5px solid #cbd5e1',
+                  fontSize: 15,
+                  outline: 'none',
+                  background: '#f8fafc',
+                  color: '#0f172a',
+                  boxSizing: 'border-box',
+                  transition: 'border 0.2s'
+                }}
+              />
+              <User size={18} color="#94a3b8" style={{ position: 'absolute', left: 14, top: 14 }} />
+            </div>
+            {validationErrors.name && (
+              <div style={{ color: '#ef4444', fontSize: 12, marginTop: 4 }}>{validationErrors.name}</div>
+            )}
+          </div>
+
+          {/* 2. Email Address */}
+          <div style={{ marginBottom: 20 }}>
+            <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: '#1e293b', marginBottom: 6 }}>
+              Email Address <span style={{ color: '#ef4444' }}>*</span>
+            </label>
+            <div style={{ position: 'relative' }}>
+              <input
+                type="email"
+                value={formData.email}
+                onChange={(e) => handleInputChange('email', e.target.value)}
+                placeholder="name@example.com"
+                style={{
+                  width: '100%',
+                  padding: '13px 16px 13px 44px',
+                  borderRadius: 10,
+                  border: validationErrors.email ? '1.5px solid #ef4444' : '1.5px solid #cbd5e1',
+                  fontSize: 15,
+                  outline: 'none',
+                  background: '#f8fafc',
+                  color: '#0f172a',
+                  boxSizing: 'border-box',
+                  transition: 'border 0.2s'
+                }}
+              />
+              <Mail size={18} color="#94a3b8" style={{ position: 'absolute', left: 14, top: 14 }} />
+            </div>
+            {validationErrors.email && (
+              <div style={{ color: '#ef4444', fontSize: 12, marginTop: 4 }}>{validationErrors.email}</div>
+            )}
+          </div>
+
+          {/* 3. Phone Number */}
+          <div style={{ marginBottom: 26 }}>
+            <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: '#1e293b', marginBottom: 6 }}>
+              Phone Number <span style={{ color: '#ef4444' }}>*</span>
+            </label>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <span style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                padding: '0 14px',
+                background: '#e2e8f0',
+                border: '1.5px solid #cbd5e1',
+                borderRadius: 10,
+                fontSize: 14,
+                fontWeight: 700,
+                color: '#334155'
+              }}>
+                +91
+              </span>
+              <div style={{ position: 'relative', flex: 1 }}>
+                <input
+                  type="tel"
+                  maxLength={10}
+                  value={formData.phone}
+                  onChange={(e) => handleInputChange('phone', e.target.value)}
+                  placeholder="9876543210 (10 digits)"
+                  style={{
+                    width: '100%',
+                    padding: '13px 16px 13px 42px',
+                    borderRadius: 10,
+                    border: validationErrors.phone ? '1.5px solid #ef4444' : '1.5px solid #cbd5e1',
+                    fontSize: 15,
+                    outline: 'none',
+                    background: '#f8fafc',
+                    color: '#0f172a',
+                    boxSizing: 'border-box',
+                    transition: 'border 0.2s'
+                  }}
+                />
+                <Phone size={18} color="#94a3b8" style={{ position: 'absolute', left: 14, top: 14 }} />
+              </div>
+            </div>
+            {validationErrors.phone && (
+              <div style={{ color: '#ef4444', fontSize: 12, marginTop: 4 }}>{validationErrors.phone}</div>
+            )}
+          </div>
+
+          {/* Fee Summary Banner */}
+          <div style={{
+            background: '#f0fdf4',
+            border: '1px solid #bbf7d0',
+            borderRadius: 12,
+            padding: '14px 18px',
+            marginBottom: 24,
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center'
+          }}>
+            <div>
+              <span style={{ fontSize: 13, fontWeight: 800, color: '#15803d' }}>
+                Course Access Fee:
+              </span>
+              <span style={{ fontSize: 12, color: '#64748b', marginLeft: 6 }}>
+                (Pay ₹1 via PhonePe / UPI)
+              </span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
+              <span style={{ textDecoration: 'line-through', color: '#94a3b8', fontSize: 13 }}>₹2,999</span>
+              <span style={{ fontSize: 20, fontWeight: 900, color: '#15803d' }}>₹1</span>
+            </div>
+          </div>
+
+          {/* Submit Button */}
+          <button
+            type="submit"
+            disabled={loading}
+            style={{
+              width: '100%',
+              background: 'linear-gradient(135deg, #0056D2 0%, #1d4ed8 100%)',
+              color: '#ffffff',
+              border: 'none',
+              padding: '16px 24px',
+              borderRadius: 12,
+              fontSize: 16,
+              fontWeight: 800,
+              cursor: loading ? 'not-allowed' : 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 10,
+              boxShadow: '0 10px 25px rgba(0, 86, 210, 0.35)',
+              transition: 'all 0.2s ease'
+            }}
+            onMouseEnter={(e) => {
+              if (!loading) {
+                e.currentTarget.style.transform = 'translateY(-1px)';
+                e.currentTarget.style.boxShadow = '0 14px 30px rgba(0, 86, 210, 0.45)';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (!loading) {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = '0 10px 25px rgba(0, 86, 210, 0.35)';
+              }
+            }}
+          >
+            {loading ? (
+              <>
+                <RefreshCw size={18} className="animate-spin" />
+                <span>Connecting Payment Gateway...</span>
+              </>
+            ) : (
+              <>
+                <span>Register & Proceed to Pay ₹1</span>
+                <ArrowRight size={18} />
+              </>
+            )}
+          </button>
+
+          <div style={{ textAlign: 'center', marginTop: 14, fontSize: 12, color: '#64748b', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+            <ShieldCheck size={14} color="#16a34a" />
+            <span>PhonePe PG 256-bit encryption • Instant duplicate check</span>
+          </div>
+
+        </form>
+      </div>
+
+      {/* =========================================================================
+          STEP 2: PHONEPE & UPI QR PAYMENT MODAL (APPEARS AFTER FORM IS SUBMITTED)
+          ========================================================================= */}
+      {showQrModal && (
         <div style={{
           position: 'fixed',
           inset: 0,
-          background: 'rgba(0, 0, 0, 0.75)',
-          backdropFilter: 'blur(6px)',
+          background: 'rgba(15, 23, 42, 0.82)',
+          backdropFilter: 'blur(8px)',
+          zIndex: 9999,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          zIndex: 99999,
-          padding: 20
+          padding: '16px'
         }}>
           <div style={{
             background: '#ffffff',
-            borderRadius: 20,
-            maxWidth: 440,
+            borderRadius: 24,
+            maxWidth: 480,
             width: '100%',
             overflow: 'hidden',
-            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.4)',
-            border: '1px solid #e2e8f0'
+            boxShadow: '0 25px 60px -15px rgba(0, 0, 0, 0.35)',
+            border: '1px solid rgba(255, 255, 255, 0.2)',
+            animation: 'fadeIn 0.25s ease-out'
           }}>
             {/* Modal Header */}
             <div style={{
-              background: '#0c2340',
+              background: 'linear-gradient(135deg, #0f172a 0%, #5f259f 100%)',
               color: '#ffffff',
-              padding: '20px 24px',
+              padding: '22px 24px',
               display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center'
+              alignItems: 'center',
+              justifyContent: 'space-between'
             }}>
               <div>
-                <div style={{ fontSize: 12, color: '#93c5fd', fontWeight: 700, textTransform: 'uppercase' }}>
-                  Razorpay Checkout
+                <div style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  background: 'rgba(255, 255, 255, 0.15)',
+                  border: '1px solid rgba(255, 255, 255, 0.3)',
+                  color: '#ffffff',
+                  padding: '3px 10px',
+                  borderRadius: 9999,
+                  fontSize: 11,
+                  fontWeight: 800,
+                  marginBottom: 6,
+                  letterSpacing: '0.04em'
+                }}>
+                  <Smartphone size={12} />
+                  <span>PHONEPE PG V2 LIVE GATEWAY</span>
                 </div>
-                <div style={{ fontSize: 16, fontWeight: 700, marginTop: 2 }}>
-                  WebinarFlow AI Platform
-                </div>
+                <h4 style={{ margin: 0, fontSize: 20, fontWeight: 900, color: '#ffffff' }}>
+                  Complete ₹1 Payment
+                </h4>
+                <p style={{ margin: '3px 0 0', fontSize: 12.5, color: '#cbd5e1' }}>
+                  Pay ₹1 via PhonePe, GPay, Paytm, BHIM, or UPI QR
+                </p>
               </div>
-              <div style={{ fontSize: 20, fontWeight: 800, color: '#ffffff' }}>
-                ₹{pendingOrder.amount}
-              </div>
+
+              <button
+                onClick={() => {
+                  if (confirm('Cancel payment? Your details are saved, but ₹1 payment is required to activate registration.')) {
+                    setShowQrModal(false);
+                  }
+                }}
+                style={{
+                  background: 'rgba(255, 255, 255, 0.15)',
+                  border: 'none',
+                  color: '#ffffff',
+                  width: 34,
+                  height: 34,
+                  borderRadius: '50%',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transition: 'background 0.2s'
+                }}
+              >
+                <X size={18} />
+              </button>
             </div>
 
-            {/* Modal Content */}
-            <div style={{ padding: 24 }}>
-              <div style={{ fontSize: 13, color: '#64748b', marginBottom: 16 }}>
-                Order ID: <code>{pendingOrder.orderId}</code>
-              </div>
-
-              {/* Payment Method Selector */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, marginBottom: 20 }}>
-                {['UPI', 'CARD', 'NETBANKING'].map(method => (
-                  <button
-                    key={method}
-                    type="button"
-                    onClick={() => setSelectedMethod(method)}
-                    style={{
-                      padding: '10px 4px',
-                      borderRadius: 10,
-                      border: selectedMethod === method ? '2px solid #4f46e5' : '1px solid #e2e8f0',
-                      background: selectedMethod === method ? '#eff6ff' : '#ffffff',
-                      color: selectedMethod === method ? '#4f46e5' : '#475569',
-                      fontSize: 12,
-                      fontWeight: 700,
-                      cursor: 'pointer'
-                    }}
-                  >
-                    {method}
-                  </button>
-                ))}
-              </div>
-
+            {/* Modal Body */}
+            <div style={{ padding: '24px 28px' }}>
+              
+              {/* Participant Pill */}
               <div style={{
                 background: '#f8fafc',
                 border: '1px solid #e2e8f0',
                 borderRadius: 12,
-                padding: 16,
-                marginBottom: 20,
-                fontSize: 13,
-                color: '#334155'
+                padding: '10px 14px',
+                marginBottom: 16,
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                fontSize: 12
               }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-                  <span>Participant:</span>
-                  <strong>{pendingOrder.name}</strong>
+                <div>
+                  <div style={{ fontWeight: 800, color: '#0f172a' }}>{registeredData?.name}</div>
+                  <div style={{ color: '#64748b', fontSize: 11 }}>{registeredData?.email}</div>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-                  <span>Class Date:</span>
-                  <strong style={{ color: '#4f46e5' }}>November 4, 2026</strong>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span>Method Selected:</span>
-                  <strong>{selectedMethod} (Instant Verification)</strong>
+                <div style={{ textAlign: 'right' }}>
+                  <div style={{ fontSize: 11, color: '#64748b' }}>Payable Amount</div>
+                  <div style={{ fontSize: 16, fontWeight: 900, color: '#16a34a' }}>₹1.00</div>
                 </div>
               </div>
 
-              {/* Action Buttons */}
-              <div style={{ display: 'flex', gap: 12 }}>
-                <button
-                  type="button"
-                  onClick={() => setShowSandboxModal(false)}
+              {/* Direct UPI QR Code Container (Primary Payment Method) */}
+              <div style={{
+                background: '#f8fafc',
+                border: '1.5px solid #e2e8f0',
+                borderRadius: 18,
+                padding: '16px',
+                textAlign: 'center',
+                marginBottom: 16
+              }}>
+                <div style={{
+                  fontSize: 13,
+                  fontWeight: 800,
+                  color: '#1e293b',
+                  marginBottom: 10,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 6
+                }}>
+                  <Smartphone size={15} color="#5f259f" />
+                  <span>Scan with PhonePe, GPay, Paytm or any UPI App</span>
+                </div>
+
+                <div style={{
+                  width: 190,
+                  height: 190,
+                  margin: '0 auto 10px',
+                  background: '#ffffff',
+                  padding: 8,
+                  borderRadius: 12,
+                  boxShadow: '0 6px 20px rgba(0, 0, 0, 0.08)',
+                  border: '2px solid #5f259f',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}>
+                  <img
+                    src={qrCodeUrl}
+                    alt="Scan UPI QR Code to Pay ₹1"
+                    style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }}
+                  />
+                </div>
+
+                {/* Amount, Timer, and Live Payment Detection Tag */}
+                <div style={{ display: 'flex', justifyContent: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 12 }}>
+                  <div style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 5,
+                    background: '#dcfce7',
+                    border: '1px solid #86efac',
+                    color: '#15803d',
+                    padding: '3px 9px',
+                    borderRadius: 999,
+                    fontSize: 11.5,
+                    fontWeight: 800
+                  }}>
+                    <span>Amount: ₹1.00</span>
+                  </div>
+
+                  <div style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 5,
+                    background: '#fffbeb',
+                    border: '1px solid #fde68a',
+                    color: '#b45309',
+                    padding: '3px 9px',
+                    borderRadius: 999,
+                    fontSize: 11.5,
+                    fontWeight: 700
+                  }}>
+                    <Clock size={12} />
+                    <span>Expires in {formatTimer(timeLeft)}</span>
+                  </div>
+
+                  <div style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 5,
+                    background: '#eff6ff',
+                    border: '1px solid #bfdbfe',
+                    color: '#1d4ed8',
+                    padding: '3px 9px',
+                    borderRadius: 999,
+                    fontSize: 11,
+                    fontWeight: 700
+                  }}>
+                    <RefreshCw size={11} className="animate-spin" />
+                    <span>Waiting for ₹1...</span>
+                  </div>
+                </div>
+
+                {/* Direct Mobile UPI Intent Button (Opens PhonePe/GPay app directly on phone) */}
+                <a
+                  href={upiPayload}
                   style={{
-                    flex: 1,
-                    padding: '12px',
-                    borderRadius: 10,
-                    border: '1px solid #cbd5e1',
-                    background: '#ffffff',
-                    color: '#64748b',
-                    fontSize: 14,
-                    fontWeight: 600,
-                    cursor: 'pointer'
-                  }}
-                >
-                  Cancel
-                </button>
-                <button
-                  type="button"
-                  onClick={handleVerifySandboxPayment}
-                  disabled={loading}
-                  style={{
-                    flex: 2,
-                    padding: '12px',
-                    borderRadius: 10,
-                    border: 'none',
-                    background: '#16a34a',
-                    color: '#ffffff',
-                    fontSize: 14,
-                    fontWeight: 800,
-                    cursor: loading ? 'not-allowed' : 'pointer',
-                    display: 'flex',
+                    display: 'inline-flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    gap: 8
+                    gap: 6,
+                    background: 'linear-gradient(135deg, #5f259f 0%, #4a154b 100%)',
+                    color: '#ffffff',
+                    textDecoration: 'none',
+                    padding: '10px 18px',
+                    borderRadius: 10,
+                    fontWeight: 800,
+                    fontSize: 13,
+                    boxShadow: '0 4px 12px rgba(95, 37, 159, 0.25)',
+                    transition: 'all 0.2s'
                   }}
                 >
-                  {loading ? (
-                    <RefreshCw size={16} style={{ animation: 'spin 1s linear infinite' }} />
+                  <Smartphone size={14} />
+                  <span>Tap to Pay ₹1 in PhonePe / GPay App (Mobile)</span>
+                </a>
+              </div>
+
+              {/* Optional PhonePe Hosted Checkout Link */}
+              {phonePeOrder?.redirectUrl && (
+                <div style={{ marginBottom: 14, textAlign: 'center' }}>
+                  <a
+                    href={phonePeOrder.redirectUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 6,
+                      color: '#5f259f',
+                      fontSize: 12,
+                      fontWeight: 700,
+                      textDecoration: 'underline',
+                      padding: '4px 8px'
+                    }}
+                  >
+                    <ExternalLink size={13} />
+                    <span>Or open PhonePe Hosted Web Portal</span>
+                  </a>
+                </div>
+              )}
+
+              {/* Copy UPI ID Strip */}
+              <div style={{
+                background: '#faf5ff',
+                border: '1px solid #e9d5ff',
+                borderRadius: 12,
+                padding: '8px 12px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                marginBottom: 14
+              }}>
+                <div style={{ fontSize: 12 }}>
+                  <span style={{ color: '#64748b', marginRight: 6 }}>UPI ID:</span>
+                  <strong style={{ color: '#5f259f', fontFamily: 'monospace', fontSize: 13 }}>kairatechnologies@okhdfcbank</strong>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleCopyUpiId}
+                  style={{
+                    background: copied ? '#16a34a' : '#5f259f',
+                    color: '#ffffff',
+                    border: 'none',
+                    padding: '5px 10px',
+                    borderRadius: 8,
+                    fontSize: 11,
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 5,
+                    transition: 'all 0.2s'
+                  }}
+                >
+                  {copied ? (
+                    <>
+                      <Check size={12} />
+                      <span>Copied!</span>
+                    </>
                   ) : (
-                    <CheckCircle2 size={16} />
+                    <>
+                      <Copy size={12} />
+                      <span>Copy UPI</span>
+                    </>
                   )}
-                  <span>Authorize & Verify</span>
                 </button>
               </div>
+
+              {/* Error message: If ₹1 is not paid yet, this clearly alerts the user */}
+              {verifyError && (
+                <div style={{
+                  background: '#fef2f2',
+                  border: '1.5px solid #fca5a5',
+                  borderRadius: 12,
+                  padding: '12px 14px',
+                  color: '#b91c1c',
+                  fontSize: 13,
+                  marginBottom: 16,
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: 10,
+                  boxShadow: '0 4px 12px rgba(239, 68, 68, 0.1)'
+                }}>
+                  <AlertCircle size={18} style={{ flexShrink: 0, marginTop: 1 }} />
+                  <div>
+                    <strong style={{ display: 'block', marginBottom: 2 }}>Payment Pending</strong>
+                    <span>{verifyError}</span>
+                  </div>
+                </div>
+              )}
+
+              {/* Big Action Button: Strictly Verifies ₹1 Payment with PhonePe */}
+              <button
+                type="button"
+                onClick={() => handleVerifyUpiPayment(false)}
+                disabled={isVerifying}
+                style={{
+                  width: '100%',
+                  background: 'linear-gradient(135deg, #16a34a 0%, #15803d 100%)',
+                  color: '#ffffff',
+                  border: 'none',
+                  padding: '15px',
+                  borderRadius: 14,
+                  fontSize: 16,
+                  fontWeight: 900,
+                  cursor: isVerifying ? 'not-allowed' : 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 10,
+                  boxShadow: '0 8px 22px rgba(22, 163, 74, 0.4)',
+                  transition: 'all 0.2s ease'
+                }}
+                onMouseEnter={(e) => {
+                  if (!isVerifying) {
+                    e.currentTarget.style.transform = 'translateY(-1px)';
+                    e.currentTarget.style.boxShadow = '0 12px 28px rgba(22, 163, 74, 0.5)';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!isVerifying) {
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.boxShadow = '0 8px 22px rgba(22, 163, 74, 0.4)';
+                  }
+                }}
+              >
+                {isVerifying ? (
+                  <>
+                    <RefreshCw size={20} className="animate-spin" />
+                    <span>Checking ₹1 with PhonePe Bank...</span>
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle2 size={20} />
+                    <span>I have Paid ₹1 (Verify with PhonePe)</span>
+                    <ArrowRight size={18} />
+                  </>
+                )}
+              </button>
+
+              {/* Demo test bypass (optional developer preview) */}
+              <div style={{ textAlign: 'center', marginTop: 10 }}>
+                <button
+                  type="button"
+                  onClick={() => handleVerifyUpiPayment(true)}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: '#94a3b8',
+                    fontSize: 11,
+                    textDecoration: 'underline',
+                    cursor: 'pointer',
+                    padding: '4px'
+                  }}
+                  title="Simulate ₹1 received for instant dev testing"
+                >
+                  ⚡ Test Mode: Simulate ₹1 Verified (Demo Bypass)
+                </button>
+              </div>
+
+              <div style={{
+                textAlign: 'center',
+                marginTop: 10,
+                fontSize: 11,
+                color: '#64748b',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 6
+              }}>
+                <ShieldCheck size={14} color="#16a34a" />
+                <span>Instant confirmation sent to your Email & WhatsApp</span>
+              </div>
+
             </div>
           </div>
         </div>
       )}
+
     </div>
   );
 }

@@ -1,4 +1,5 @@
 import { createRazorpayOrder, verifyRazorpayPayment } from '../services/razorpayService.js';
+import { createPhonePeOrder, checkPhonePeStatus } from '../services/phonepeService.js';
 import RegistrationModel from '../models/Registration.js';
 import PaymentModel from '../models/Payment.js';
 import WebinarModel from '../models/Webinar.js';
@@ -12,11 +13,12 @@ import { sendWhatsAppConfirmation } from '../services/whatsappService.js';
 
 export const createOrder = async (req, res, next) => {
   try {
-    const { registrationId, amount = 499, currency = 'INR', description = 'VIP Masterclass Access' } = req.body;
+    const { registrationId, amount = 1, currency = 'INR', description = 'Kaira Course Registration Fee - ₹1' } = req.body;
 
     const receipt = `rec_${Date.now().toString().slice(-6)}`;
+    const payableAmount = Number(amount) || 1;
     const order = await createRazorpayOrder({
-      amount: Number(amount),
+      amount: payableAmount,
       currency,
       receipt,
       notes: {
@@ -40,15 +42,13 @@ export const createOrder = async (req, res, next) => {
 
 export const verifyPayment = async (req, res, next) => {
   try {
-    const {
-      registrationId,
-      orderId,
-      paymentId,
-      signature,
-      amount = 499,
-      currency = 'INR',
-      method = 'UPI'
-    } = req.body;
+    const registrationId = req.body.registrationId || req.body.registration_id;
+    const orderId = req.body.orderId || req.body.razorpayOrderId || req.body.razorpay_order_id;
+    const paymentId = req.body.paymentId || req.body.razorpayPaymentId || req.body.razorpay_payment_id;
+    const signature = req.body.signature || req.body.razorpaySignature || req.body.razorpay_signature;
+    const amount = Number(req.body.amount || 1);
+    const currency = req.body.currency || 'INR';
+    const method = req.body.method || 'UPI';
 
     if (!orderId || !paymentId) {
       return res.status(400).json({ success: false, message: 'Missing orderId or paymentId.' });
@@ -389,3 +389,157 @@ export const verifyCoursePayment = async (req, res, next) => {
     next(error);
   }
 };
+
+// ================= PHONEPE PG V2 INTEGRATION =================
+export const createPhonePePayment = async (req, res, next) => {
+  try {
+    const { registrationId, amount = 1 } = req.body;
+    const merchantOrderId = `ORD_PE_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+    const redirectUrl = `${process.env.CLIENT_URL || 'http://localhost:5173'}/thankyou?regId=${registrationId || ''}&orderId=${merchantOrderId}`;
+
+    const order = await createPhonePeOrder({
+      amount: Number(amount) || 1,
+      merchantOrderId,
+      redirectUrl
+    });
+
+    res.status(200).json({
+      success: true,
+      orderId: order.orderId,
+      merchantOrderId: order.merchantOrderId,
+      redirectUrl: order.redirectUrl,
+      amount: order.amount
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Check Live PhonePe Payment Status
+export const getPhonePeOrderStatus = async (req, res, next) => {
+  try {
+    const { merchantOrderId } = req.params;
+    const statusCheck = await checkPhonePeStatus(merchantOrderId);
+    res.status(200).json({
+      success: true,
+      state: statusCheck.state,
+      isCompleted: statusCheck.state === 'COMPLETED',
+      data: statusCheck.data
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const verifyPhonePePayment = async (req, res, next) => {
+  try {
+    const { registrationId, merchantOrderId, phonePeOrderId, amount = 1 } = req.body;
+
+    let reg = null;
+    if (registrationId) {
+      reg = await RegistrationModel.findById(registrationId);
+    }
+
+    // STRICT REAL VERIFICATION: Check with PhonePe API if ₹1 was actually paid!
+    if (merchantOrderId) {
+      const statusCheck = await checkPhonePeStatus(merchantOrderId);
+      if (statusCheck.state !== 'COMPLETED') {
+        return res.status(400).json({
+          success: false,
+          state: statusCheck.state || 'PENDING',
+          message: '₹1 payment innum receive aagala (Status: ' + (statusCheck.state || 'PENDING') + '). PhonePe-la ₹1 pay pannitu approm verify pannunga.'
+        });
+      }
+    }
+
+    const customer = {
+      name: reg ? reg.name : 'Valued Learner',
+      email: reg ? reg.email : 'student@example.com',
+      phone: reg ? reg.phone : '+91 9876543210'
+    };
+
+    const paymentId = phonePeOrderId || `pay_pe_${Date.now()}`;
+    const invoice = await generateInvoice({
+      registrationId: reg ? reg._id : `REG-${Date.now().toString().slice(-6)}`,
+      paymentId,
+      customer,
+      amount: Number(amount),
+      currency: 'INR',
+      description: 'Kaira Course: Full-Stack AI & Autonomous Agents'
+    });
+
+    const payment = await PaymentModel.create({
+      registrationId: reg ? reg._id : 'reg_pe_' + Date.now(),
+      orderId: merchantOrderId || ('ord_' + Date.now()),
+      paymentId,
+      signature: 'phonepe_verified_' + Date.now(),
+      amount: Number(amount),
+      currency: 'INR',
+      status: 'captured',
+      method: 'PhonePe PG (UPI / Cards)',
+      invoiceNumber: invoice.invoiceNumber,
+      customerName: customer.name,
+      customerEmail: customer.email,
+      customerPhone: customer.phone,
+      itemTitle: 'Kaira Course: Full-Stack AI & Autonomous Agents'
+    });
+
+    if (reg) {
+      reg = await RegistrationModel.findByIdAndUpdate(reg._id, {
+        paymentStatus: 'completed',
+        amountPaid: Number(amount),
+        paymentId,
+        orderId: merchantOrderId,
+        invoiceNumber: invoice.invoiceNumber,
+        emailNotified: true,
+        whatsappNotified: true
+      });
+    }
+
+    const liveWebinarLink = `${process.env.CLIENT_URL || 'http://localhost:5173'}/thankyou?regId=${reg ? reg._id : ''}`;
+    const invoicePdfUrl = `${process.env.API_URL || 'http://localhost:5000'}/api/invoices/${invoice.invoiceNumber}/pdf`;
+
+    // Automated Notifications dispatch
+    try {
+      await sendConfirmationEmail({
+        to: customer.email,
+        name: customer.name,
+        webinarTitle: 'Kaira Course: Full-Stack AI & Autonomous Agents',
+        registrationId: reg ? reg._id : invoice.registrationId,
+        amountPaid: Number(amount),
+        date: 'November 4, 2026',
+        time: '07:00 PM IST',
+        timezone: 'IST (UTC+5:30)',
+        webinarLink: liveWebinarLink,
+        whatsappCommunityUrl: 'https://chat.whatsapp.com/demoWebinarFlowVip2026',
+        invoiceNumber: invoice.invoiceNumber,
+        invoicePdfUrl
+      });
+
+      await sendWhatsAppConfirmation({
+        phone: customer.phone,
+        name: customer.name,
+        webinarTitle: 'Kaira Course: Full-Stack AI & Autonomous Agents',
+        registrationId: reg ? reg._id : invoice.registrationId,
+        date: 'November 4, 2026',
+        time: '07:00 PM IST',
+        webinarLink: liveWebinarLink,
+        vipGroupUrl: 'https://chat.whatsapp.com/demoWebinarFlowVip2026',
+        invoiceNumber: invoice.invoiceNumber
+      });
+    } catch (err) {
+      console.warn('[PhonePe Alerts Warning]:', err.message);
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'PhonePe ₹1 Payment verified successfully!',
+      payment,
+      invoice,
+      registration: reg
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+

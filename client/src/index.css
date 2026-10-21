@@ -602,3 +602,84 @@ a {
   z-index: 1;
 }
 
+/* Continuous Moving Marquee Animation: Left to Right */
+@keyframes marqueeLeftToRight {
+  0% {
+    transform: translate3d(-50%, 0, 0);
+  }
+  100% {
+    transform: translate3d(0%, 0, 0);
+  }
+}
+
+.marquee-reviews-track {
+  display: flex;
+  gap: 24px;
+  width: max-content;
+  animation: marqueeLeftToRight 45s linear infinite;
+  will-change: transform;
+}
+
+.marquee-reviews-track:hover {
+  animation-play-state: paused;
+}
+
+
+
+
+/* Animated React Atom Spin */
+@keyframes spinSlow {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.spin-slow {
+  animation: spinSlow 12s linear infinite;
+  display: inline-block;
+  transform-origin: center center;
+}
+
+.spin-medium {
+  animation: spinSlow 6s linear infinite;
+  display: inline-block;
+  transform-origin: center center;
+}
+
+/* Floating Animation */
+@keyframes floatGentle {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-12px);
+  }
+}
+
+.float-card {
+  animation: floatGentle 4s ease-in-out infinite;
+}
+
+.float-card-delayed {
+  animation: floatGentle 4.8s ease-in-out infinite 2s;
+}
+
+/* Shimmer pulse effect on primary buttons */
+@keyframes shimmerGlow {
+  0% {
+    box-shadow: 0 10px 25px -4px rgba(37, 99, 235, 0.45);
+  }
+  50% {
+    box-shadow: 0 14px 35px 0px rgba(97, 218, 251, 0.7);
+  }
+  100% {
+    box-shadow: 0 10px 25px -4px rgba(37, 99, 235, 0.45);
+  }
+}
+
+.btn-hero-shimmer {
+  animation: shimmerGlow 3s ease-in-out infinite;
+}

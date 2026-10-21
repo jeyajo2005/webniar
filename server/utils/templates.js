@@ -19,22 +19,22 @@ export const emailTemplates = {
     <html lang="en">
     <head>
       <meta charset="utf-8">
-      <title>Webinar Registration Confirmed – November 4, 2026</title>
+      <title>Thank You for Choosing Kaira Course! – Payment Verified</title>
       <style>
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #0f172a; color: #f8fafc; margin: 0; padding: 24px; }
         .card { max-width: 600px; margin: 0 auto; background: #1e293b; border: 1px solid #334155; border-radius: 16px; overflow: hidden; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5); }
-        .header { background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #db2777 100%); padding: 36px 32px; text-align: center; }
+        .header { background: linear-gradient(135deg, #0056D2 0%, #1d4ed8 50%, #4338ca 100%); padding: 36px 32px; text-align: center; }
         .badge { display: inline-block; background: rgba(255,255,255,0.2); backdrop-filter: blur(8px); padding: 6px 16px; border-radius: 9999px; font-size: 13px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: #fff; margin-bottom: 12px; }
         .title { color: #ffffff; font-size: 26px; font-weight: 800; margin: 0; line-height: 1.3; }
         .body { padding: 32px; }
         .greeting { font-size: 18px; font-weight: 600; color: #f8fafc; margin-bottom: 14px; }
-        .alert-box { background: rgba(245, 158, 11, 0.12); border-left: 4px solid #f59e0b; padding: 14px 16px; border-radius: 8px; margin: 20px 0; font-size: 14px; color: #fef3c7; line-height: 1.5; }
+        .alert-box { background: rgba(34, 197, 94, 0.12); border-left: 4px solid #22c55e; padding: 14px 16px; border-radius: 8px; margin: 20px 0; font-size: 14px; color: #dcfce7; line-height: 1.5; }
         .info-grid { background: #0f172a; border-radius: 12px; padding: 20px; margin: 24px 0; border: 1px solid #334155; }
         .info-item { display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 14px; border-bottom: 1px solid #1e293b; padding-bottom: 8px; }
         .info-item:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
         .info-label { color: #94a3b8; }
         .info-val { color: #f8fafc; font-weight: 600; }
-        .cta-btn { display: block; background: #4f46e5; color: #ffffff !important; text-decoration: none; padding: 14px 24px; border-radius: 8px; font-weight: 700; font-size: 15px; text-align: center; margin: 16px 0; }
+        .cta-btn { display: block; background: #0056D2; color: #ffffff !important; text-decoration: none; padding: 14px 24px; border-radius: 8px; font-weight: 700; font-size: 15px; text-align: center; margin: 16px 0; }
         .wa-btn { display: block; background: #16a34a; color: #ffffff !important; text-decoration: none; padding: 14px 24px; border-radius: 8px; font-weight: 700; font-size: 15px; text-align: center; margin: 16px 0; }
         .inv-btn { display: block; background: #334155; color: #e2e8f0 !important; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-weight: 600; font-size: 14px; text-align: center; margin: 12px 0; }
         .footer { text-align: center; padding: 24px 32px; color: #64748b; font-size: 12px; border-top: 1px solid #334155; }
@@ -43,13 +43,13 @@ export const emailTemplates = {
     <body>
       <div class="card">
         <div class="header">
-          <div class="badge">Registration Confirmed • Class: November 4, 2026</div>
-          <h1 class="title">${webinarTitle}</h1>
+          <div class="badge">Official Confirmation • Kaira</div>
+          <h1 class="title">Thank You for Choosing Kaira Course!</h1>
         </div>
         <div class="body">
           <p class="greeting">Hello ${name},</p>
           <p style="color: #cbd5e1; line-height: 1.6;">
-            Your webinar registration has been successfully confirmed and your seat is reserved!
+            Thank you for enrolling in Kaira Course! Your ₹1 UPI payment has been verified successfully on our server and your official student registration is confirmed.
           </p>
 
           <div class="alert-box">
@@ -269,35 +269,28 @@ export const emailTemplates = {
 export const whatsappTemplates = {
   confirmation: ({
     name,
-    webinarTitle = 'Full-Stack AI & Autonomous Agents Masterclass',
+    webinarTitle = 'Kaira Course: Full-Stack AI & Autonomous Agents',
     registrationId,
-    date = 'November 4, 2026',
-    time = '07:00 PM IST',
-    vipGroupUrl = 'https://chat.whatsapp.com/demoWebinarFlowVip2026',
     invoiceNumber,
     webinarLink
   }) =>
-`🎉 *Webinar Registration Confirmed!*
+    `🎉 *Thank You for Choosing Kaira Course!*
 
-Hello ${name}, your registration for *${webinarTitle}* has been verified and confirmed!
+Hello ${name},
+
+Your registration for *Kaira Course* has been successfully verified!
+We have received your ₹1 UPI course registration fee.
 
 🆔 *Registration ID:* ${registrationId || 'REG-2026-CONFIRMED'}
-💳 *Payment Status:* Verified & Completed
-📅 *Webinar Class Date:* *November 4, 2026*
-⏰ *Class Time:* ${time}
-${invoiceNumber ? `📄 *Invoice Number:* ${invoiceNumber}\n` : ''}
-⚠️ *Important Note:* The live interactive masterclass takes place on *November 4, 2026*. Please mark your calendar!
-
-👥 *Next Step - Join Our Official WhatsApp Community:*
-👉 ${vipGroupUrl}
-
-🔗 *Your Confirmation & Room Portal:*
+💳 *Payment Status:* PAID & VERIFIED (₹1.00)
+${invoiceNumber ? `📄 *Tax Invoice Number:* ${invoiceNumber}\n` : ''}
+🔗 *Your Confirmation & Course Room Portal:*
 ${webinarLink || 'http://localhost:5173/thankyou'}
 
-We look forward to seeing you live on November 4, 2026!`,
+Welcome to Kaira! If you have any questions, feel free to reply directly to this message.`,
 
   reminderNov4: ({ name, startsInText = '1 Hour', webinarLink, passcode = 'AI-LIVE-2026' }) =>
-`🚨 *REMINDER: Masterclass on November 4, 2026 Starts in ${startsInText}!*
+    `🚨 *REMINDER: Masterclass on November 4, 2026 Starts in ${startsInText}!*
 
 Hey ${name}, we are getting ready to go live! Dr. Elena Vance is setting up the Autonomous Agent demo.
 

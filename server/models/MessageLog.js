@@ -5,7 +5,7 @@ const MessageLogSchema = new mongoose.Schema({
   recipient: { type: String, required: true },
   channel: { type: String, enum: ['email', 'whatsapp', 'sms'], required: true },
   templateName: { type: String, required: true },
-  status: { type: String, enum: ['queued', 'sent', 'delivered', 'failed'], default: 'delivered' },
+  status: { type: String, enum: ['queued', 'sent', 'delivered', 'failed', 'simulated'], default: 'delivered' },
   payload: { type: Object },
   error: { type: String },
   sentAt: { type: Date, default: Date.now }
