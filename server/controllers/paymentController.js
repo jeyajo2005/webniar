@@ -7,7 +7,7 @@ import CourseModel from '../models/Course.js';
 import EnrollmentModel from '../models/Enrollment.js';
 import UserModel from '../models/User.js';
 import { generateInvoice } from '../services/invoiceService.js';
-import { sendConfirmationEmail, sendInvoiceEmail } from '../services/emailService.js';
+import { sendConfirmationEmail, sendInvoiceEmail, sendCourseAccessEmail } from '../services/emailService.js';
 import { sendWhatsAppConfirmation } from '../services/whatsappService.js';
 
 export const createOrder = async (req, res, next) => {
@@ -121,7 +121,11 @@ export const verifyPayment = async (req, res, next) => {
       currency,
       status: 'captured',
       method,
-      invoiceNumber: invoice.invoiceNumber
+      invoiceNumber: invoice.invoiceNumber,
+      customerName: customer.name,
+      customerEmail: customer.email,
+      customerPhone: customer.phone,
+      itemTitle: webinarTitle
     });
 
     // Update Registration to verified PAID status
@@ -323,7 +327,11 @@ export const verifyCoursePayment = async (req, res, next) => {
       currency,
       status: 'captured',
       method,
-      invoiceNumber: invoice.invoiceNumber
+      invoiceNumber: invoice.invoiceNumber,
+      customerName: studentName,
+      customerEmail: studentEmail,
+      customerPhone: studentPhone,
+      itemTitle: `Course: ${course.title}`
     });
 
     // Create Enrollment Record
@@ -351,24 +359,19 @@ export const verifyCoursePayment = async (req, res, next) => {
       studentsCount: (course.studentsCount || 0) + 1
     });
 
-    // Send Confirmation Email
+    // Send Instant Course Access & Payment Successful Confirmation Email
     try {
-      await sendConfirmationEmail({
+      await sendCourseAccessEmail({
         to: studentEmail,
         name: studentName,
-        webinarTitle: course.title,
-        registrationId: enrollment._id,
+        courseTitle: course.title,
+        courseId: course._id,
         amountPaid: payableAmount,
-        date: 'Instant Access (Lifetime)',
-        time: 'On-Demand Streaming',
-        timezone: '24/7 Access',
-        webinarLink: `${process.env.CLIENT_URL || 'http://localhost:5173'}`,
-        whatsappCommunityUrl: 'https://chat.whatsapp.com/demoWebinarFlowVip2026',
         invoiceNumber: invoice.invoiceNumber,
         invoicePdfUrl: `${process.env.API_URL || 'http://localhost:5000'}/api/invoices/${invoice.invoiceNumber}/pdf`
       });
     } catch (err) {
-      console.warn('[Course Confirmation Email Warning]:', err.message);
+      console.warn('[Course Access Email Warning]:', err.message);
     }
 
     res.status(200).json({

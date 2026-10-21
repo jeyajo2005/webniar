@@ -107,7 +107,7 @@ export const getCourseById = async (req, res, next) => {
 export const getCourseClassroom = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const userId = req.user._id;
+    const userId = req.user?._id;
 
     const course = await CourseModel.findById(id);
     if (!course) {
@@ -115,32 +115,187 @@ export const getCourseClassroom = async (req, res, next) => {
     }
 
     // Verify enrollment
-    const enrollment = await EnrollmentModel.findOne({
-      userId,
-      courseId: course._id,
-      status: 'active'
-    });
+    let enrollment = null;
+    let isEnrolled = false;
 
-    if (!enrollment && req.user.role !== 'admin') {
-      return res.status(403).json({
-        success: false,
-        message: 'Access restricted: You are not enrolled in this course. Please complete payment and enrollment to access classroom video lessons.'
+    if (userId) {
+      enrollment = await EnrollmentModel.findOne({
+        userId,
+        courseId: course._id,
+        status: 'active'
       });
+      if (enrollment || req.user.role === 'admin') {
+        isEnrolled = true;
+      }
     }
 
-    // Full access granted with authorized video streaming URLs
+    // Standard 10-video curriculum generator per course
+    const rawModules = (course.modules && course.modules.reduce((cnt, m) => cnt + (m.lessons?.length || 0), 0) >= 10)
+      ? course.modules
+      : [
+          {
+            _id: 'mod_1',
+            title: 'Module 1: Foundations & Architecture (3 Lessons)',
+            lessons: [
+              {
+                _id: 'les_01',
+                title: `01. Introduction to ${course.title}`,
+                duration: '14 min',
+                durationSec: 840,
+                videoUrl: '/videos/gemini_generated_video_323b2790.mp4',
+                isFreePreview: true,
+                summary: 'Core concepts, practical syllabus roadmap, and software prerequisites.'
+              },
+              {
+                _id: 'les_02',
+                title: '02. System Design & Architectural Patterns',
+                duration: '18 min',
+                durationSec: 1080,
+                videoUrl: '/videos/gemini_generated_video_323b2790.mp4',
+                isFreePreview: false,
+                summary: 'Deconstructing component hierarchy, data flow, and state machines.'
+              },
+              {
+                _id: 'les_03',
+                title: '03. Local Environment & Modern Toolchain Setup',
+                duration: '16 min',
+                durationSec: 960,
+                videoUrl: '/videos/gemini_generated_video_323b2790.mp4',
+                isFreePreview: false,
+                summary: 'Configuring IDE, dependencies, package managers, and secret keys.'
+              }
+            ]
+          },
+          {
+            _id: 'mod_2',
+            title: 'Module 2: Practical Core Engineering (4 Lessons)',
+            lessons: [
+              {
+                _id: 'les_04',
+                title: '04. Building Real-Time Streaming & Interactive Pipelines',
+                duration: '22 min',
+                durationSec: 1320,
+                videoUrl: '/videos/gemini_generated_video_323b2790.mp4',
+                isFreePreview: false,
+                summary: 'Event-driven communication, websockets, and asynchronous workers.'
+              },
+              {
+                _id: 'les_05',
+                title: '05. Data Persistence, Indexing & Memory Management',
+                duration: '25 min',
+                durationSec: 1500,
+                videoUrl: '/videos/gemini_generated_video_323b2790.mp4',
+                isFreePreview: false,
+                summary: 'Relational & vector databases, indexing strategies, and caching layers.'
+              },
+              {
+                _id: 'les_06',
+                title: '06. Production Security, Validation & Error Guardrails',
+                duration: '19 min',
+                durationSec: 1140,
+                videoUrl: '/videos/gemini_generated_video_323b2790.mp4',
+                isFreePreview: false,
+                summary: 'Input sanitation, JWT authentication, rate limiting, and CORS security.'
+              },
+              {
+                _id: 'les_07',
+                title: '07. High-Performance Optimization & Benchmark Auditing',
+                duration: '21 min',
+                durationSec: 1260,
+                videoUrl: '/videos/gemini_generated_video_323b2790.mp4',
+                isFreePreview: false,
+                summary: 'Memory leak profiling, code splitting, and sub-100ms response targets.'
+              }
+            ]
+          },
+          {
+            _id: 'mod_3',
+            title: 'Module 3: Monetization, Cloud Deployment & Certification (3 Lessons)',
+            lessons: [
+              {
+                _id: 'les_08',
+                title: '08. Integrating Razorpay Payments & Webhook Idempotency',
+                duration: '26 min',
+                durationSec: 1560,
+                videoUrl: '/videos/gemini_generated_video_323b2790.mp4',
+                isFreePreview: false,
+                summary: 'Capturing payments, verifying digital signatures, and automated GST billing.'
+              },
+              {
+                _id: 'les_09',
+                title: '09. Dockerizing Applications & Deploying to Cloud Production',
+                duration: '24 min',
+                durationSec: 1440,
+                videoUrl: '/videos/gemini_generated_video_323b2790.mp4',
+                isFreePreview: false,
+                summary: 'Multi-stage Dockerfiles, reverse proxy Nginx, and SSL certificate setup.'
+              },
+              {
+                _id: 'les_10',
+                title: '10. Final Capstone Project Review & Verifiable Certification',
+                duration: '28 min',
+                durationSec: 1680,
+                videoUrl: '/videos/gemini_generated_video_323b2790.mp4',
+                isFreePreview: false,
+                summary: 'Graduation capstone walkthrough, career portfolio tips, and certificate issuance.'
+              }
+            ]
+          }
+        ];
+
+    // Prepare modules with Coursera model: "1st video 100% free, next 9 lessons locked behind payment"
+    let firstLessonFound = false;
+    const processedModules = rawModules.map((mod, mIdx) => ({
+      ...mod,
+      lessons: (mod.lessons || []).map((lesson, lIdx) => {
+        // If enrolled / paid: all 10 lessons are 100% unlocked with playable video!
+        if (isEnrolled) {
+          return {
+            ...lesson,
+            isLocked: false,
+            isFreePreview: mIdx === 0 && lIdx === 0,
+            videoUrl: lesson.videoUrl || course.previewVideoUrl || '/videos/gemini_generated_video_323b2790.mp4'
+          };
+        }
+
+        // If not enrolled: ONLY the very 1st lesson of the entire course is FREE!
+        if (!firstLessonFound) {
+          firstLessonFound = true;
+          return {
+            ...lesson,
+            isLocked: false,
+            isFreePreview: true,
+            videoUrl: lesson.videoUrl || course.previewVideoUrl || '/videos/gemini_generated_video_323b2790.mp4'
+          };
+        }
+
+        // Lessons 2 to 10 are locked behind payment
+        return {
+          ...lesson,
+          isLocked: true,
+          isFreePreview: false,
+          videoUrl: null // Secure: actual video URL hidden until paid enrollment
+        };
+      })
+    }));
+
     res.status(200).json({
       success: true,
+      isEnrolled,
       course: {
         _id: course._id,
         title: course.title,
         subtitle: course.subtitle,
         instructor: course.instructor,
-        modules: course.modules,
-        category: course.category
+        price: course.price,
+        originalPrice: course.originalPrice,
+        currency: course.currency || 'INR',
+        thumbnail: course.thumbnail,
+        category: course.category,
+        modules: processedModules
       },
       enrollment: enrollment || {
-        _id: 'admin_bypass_' + Date.now(),
+        _id: 'guest_preview',
         progress: { completedLessons: [], lastWatchedLessonId: null, percent: 0 }
       }
     });

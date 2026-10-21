@@ -53,41 +53,38 @@ export default function Navbar({
           gap: 20
         }}>
           {/* 1. Left: Brand Logo & Navigation */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 28 }}>
-            <div
+          <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
+            {/* Kaira Logo matching Image 1: ● kaira */}
+            <div 
               onClick={() => onNavigate('landing')}
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: 10,
+                gap: 8,
                 cursor: 'pointer'
               }}
             >
-              <div style={{
-                width: 38,
-                height: 38,
-                borderRadius: 10,
-                background: 'linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: '#ffffff',
-                boxShadow: '0 4px 14px rgba(79, 70, 229, 0.35)'
+              <span style={{
+                width: 14,
+                height: 14,
+                borderRadius: '50%',
+                background: '#1d4ed8',
+                display: 'inline-block',
+                boxShadow: '0 2px 8px rgba(29, 78, 216, 0.4)'
+              }} />
+              <span style={{
+                fontSize: 26,
+                fontWeight: 900,
+                color: '#1d4ed8',
+                letterSpacing: '-0.035em',
+                fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
               }}>
-                <Sparkles size={20} />
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column' }}>
-                <span style={{ fontSize: 20, fontWeight: 800, color: '#0f172a', letterSpacing: '-0.02em', lineHeight: 1.1 }}>
-                  Learn<span style={{ color: '#6366f1' }}>Flow</span>
-                </span>
-                <span style={{ fontSize: 10, fontWeight: 700, color: '#94a3b8', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
-                  Academy
-                </span>
-              </div>
+                kaira
+              </span>
             </div>
 
             {/* Desktop Navigation Links */}
-            <nav style={{ display: 'flex', alignItems: 'center', gap: 20 }} className="desktop-nav">
+            <nav style={{ display: 'flex', alignItems: 'center', gap: 24, marginLeft: 16 }} className="desktop-nav">
               <button
                 onClick={() => onNavigate('landing')}
                 style={{
@@ -95,7 +92,7 @@ export default function Navbar({
                   border: 'none',
                   fontSize: 14,
                   fontWeight: currentPage === 'landing' ? 700 : 500,
-                  color: currentPage === 'landing' ? '#4f46e5' : '#475569',
+                  color: currentPage === 'landing' ? '#1d4ed8' : '#475569',
                   cursor: 'pointer',
                   padding: '6px 8px'
                 }}
@@ -128,7 +125,7 @@ export default function Navbar({
                 onClick={() => {
                   if (currentPage !== 'landing') onNavigate('landing');
                   setTimeout(() => {
-                    const el = document.getElementById('webinar-spotlight-section');
+                    const el = document.getElementById('masterclass-spotlight-section');
                     if (el) el.scrollIntoView({ behavior: 'smooth' });
                   }, 100);
                 }}
@@ -139,48 +136,53 @@ export default function Navbar({
                   fontWeight: 500,
                   color: '#475569',
                   cursor: 'pointer',
-                  padding: '6px 8px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 6
+                  padding: '6px 8px'
                 }}
               >
-                <span>Live Webinars</span>
-                <span style={{
-                  background: '#ef4444',
-                  color: '#ffffff',
-                  fontSize: 10,
-                  fontWeight: 800,
-                  padding: '1px 6px',
-                  borderRadius: 9999,
-                  textTransform: 'uppercase'
-                }}>
-                  Live
-                </span>
+                Pricing
               </button>
 
-              {onOpenIntroVideo && (
-                <button
-                  onClick={onOpenIntroVideo}
-                  style={{
-                    background: '#f5f3ff',
-                    border: '1px solid #ddd6fe',
-                    color: '#6d28d9',
-                    fontSize: 13,
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                    padding: '6px 12px',
-                    borderRadius: 8,
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 6
-                  }}
-                  title="Watch Full-Screen Business Webinar Video"
-                >
-                  <Video size={14} color="#7c3aed" />
-                  <span>Class Video</span>
-                </button>
-              )}
+              <button
+                onClick={() => {
+                  if (currentPage !== 'landing') onNavigate('landing');
+                  setTimeout(() => {
+                    const el = document.getElementById('masterclass-spotlight-section');
+                    if (el) el.scrollIntoView({ behavior: 'smooth' });
+                  }, 100);
+                }}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  fontSize: 14,
+                  fontWeight: 500,
+                  color: '#475569',
+                  cursor: 'pointer',
+                  padding: '6px 8px'
+                }}
+              >
+                Live Webinar
+              </button>
+
+              <button
+                onClick={() => {
+                  if (currentPage !== 'landing') onNavigate('landing');
+                  setTimeout(() => {
+                    const el = document.getElementById('masterclass-spotlight-section');
+                    if (el) el.scrollIntoView({ behavior: 'smooth' });
+                  }, 100);
+                }}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  fontSize: 14,
+                  fontWeight: 500,
+                  color: '#475569',
+                  cursor: 'pointer',
+                  padding: '6px 8px'
+                }}
+              >
+                About
+              </button>
             </nav>
           </div>
 
@@ -343,12 +345,12 @@ export default function Navbar({
                   onClick={() => onOpenAuth('login')}
                   style={{
                     background: 'none',
-                    border: '1px solid #cbd5e1',
-                    borderRadius: 8,
+                    border: '1px solid #0056D2',
+                    borderRadius: 4,
                     padding: '8px 16px',
                     fontSize: 13,
                     fontWeight: 700,
-                    color: '#334155',
+                    color: '#0056D2',
                     cursor: 'pointer'
                   }}
                 >
@@ -358,43 +360,21 @@ export default function Navbar({
                 <button
                   onClick={() => onOpenAuth('signup')}
                   style={{
-                    background: 'linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)',
+                    background: '#0056D2',
                     border: 'none',
-                    borderRadius: 8,
+                    borderRadius: 4,
                     padding: '8px 18px',
                     fontSize: 13,
-                    fontWeight: 700,
+                    fontWeight: 800,
                     color: '#ffffff',
                     cursor: 'pointer',
-                    boxShadow: '0 4px 12px rgba(79, 70, 229, 0.3)'
+                    boxShadow: '0 2px 8px rgba(0, 86, 210, 0.3)'
                   }}
                 >
-                  Sign Up
+                  Join for Free
                 </button>
               </div>
             )}
-
-            {/* Quick Admin Access Button */}
-            <button
-              onClick={() => onNavigate('admin')}
-              style={{
-                background: currentPage === 'admin' ? '#0f172a' : '#f1f5f9',
-                color: currentPage === 'admin' ? '#ffffff' : '#475569',
-                border: 'none',
-                borderRadius: 8,
-                padding: '8px 12px',
-                fontSize: 12,
-                fontWeight: 700,
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 6
-              }}
-              title="Admin Panel"
-            >
-              <LayoutDashboard size={14} />
-              <span>Admin</span>
-            </button>
           </div>
         </div>
       </div>

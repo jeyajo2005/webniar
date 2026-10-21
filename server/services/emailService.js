@@ -105,7 +105,7 @@ export const sendReminderEmail = async ({ to, name, webinarTitle, startsInText, 
 
 export const sendInvoiceEmail = async ({ to, name, invoiceNumber, total, date, downloadUrl }) => {
   const html = emailTemplates.invoice({ invoiceNumber, name, total, date, downloadUrl });
-  const subject = `Your Invoice & Payment Receipt (${invoiceNumber}) - WebinarFlow (November 4, 2026 Class)`;
+  const subject = `Your Invoice & Payment Receipt (${invoiceNumber}) - Kaira Learning`;
 
   console.log(`[Email Service - Invoice] To: ${to} | Invoice: ${invoiceNumber}`);
   await MessageLogModel.create({
@@ -118,3 +118,65 @@ export const sendInvoiceEmail = async ({ to, name, invoiceNumber, total, date, d
 
   return { success: true };
 };
+
+export const sendCourseAccessEmail = async ({
+  to,
+  name,
+  courseTitle,
+  courseId,
+  amountPaid = 499,
+  invoiceNumber,
+  invoicePdfUrl
+}) => {
+  const courseLink = `${process.env.CLIENT_URL || 'http://localhost:5173'}/course/${courseId || ''}`;
+  const html = emailTemplates.courseAccess({
+    name,
+    courseTitle,
+    amountPaid,
+    courseLink,
+    invoiceNumber,
+    invoicePdfUrl
+  });
+
+  const subject = `🎉 Payment Successful! Start Studying Your Course: ${courseTitle}`;
+
+  let status = 'delivered';
+  const mailer = getTransporter();
+
+  if (mailer) {
+    try {
+      await mailer.sendMail({
+        from: process.env.EMAIL_FROM || 'Kaira Learning <noreply@kaira.io>',
+        to,
+        subject,
+        html,
+      });
+      console.log(`[Email Service - Real SMTP Sent] Course Access to ${to}`);
+    } catch (err) {
+      console.warn('[Email Delivery Warning]:', err.message);
+      status = 'simulated';
+    }
+  } else {
+    console.log(`[Email Service - Course Enrolled] To: ${to} | Subject: "${subject}" | Link: ${courseLink}`);
+    status = 'simulated';
+  }
+
+  // Audit Log in MongoDB / Store
+  await MessageLogModel.create({
+    recipient: to,
+    channel: 'email',
+    templateName: 'COURSE_ENROLLMENT_SUCCESS',
+    status,
+    payload: {
+      courseTitle,
+      courseId,
+      amountPaid,
+      invoiceNumber,
+      courseLink,
+      sentAt: new Date().toISOString()
+    }
+  });
+
+  return { success: true, status };
+};
+

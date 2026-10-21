@@ -268,48 +268,76 @@ export default function CourseDetailsPage({
 
                       {isOpen && (
                         <div style={{ background: '#ffffff', padding: '6px 0' }}>
-                          {(module.lessons || []).map((lesson, lIdx) => (
-                            <div
-                              key={lesson._id || lIdx}
-                              style={{
-                                display: 'flex',
-                                justifyContent: 'space-between',
-                                alignItems: 'center',
-                                padding: '12px 24px',
-                                borderBottom: lIdx < (module.lessons.length - 1) ? '1px solid #f1f5f9' : 'none',
-                                fontSize: 14
-                              }}
-                            >
-                              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                                {isEnrolled || lesson.isFreePreview ? (
-                                  <Play size={15} color="#4f46e5" fill="#4f46e5" />
-                                ) : (
-                                  <Lock size={15} color="#94a3b8" />
-                                )}
-                                <span style={{ color: '#334155', fontWeight: 500 }}>
-                                  {lesson.title}
-                                </span>
-                              </div>
-
-                              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                                {lesson.isFreePreview && (
-                                  <span style={{
-                                    fontSize: 11,
-                                    fontWeight: 700,
-                                    color: '#4f46e5',
-                                    background: '#e0e7ff',
-                                    padding: '2px 8px',
-                                    borderRadius: 4
-                                  }}>
-                                    Preview
+                          {(module.lessons || []).map((lesson, lIdx) => {
+                            const isFirstLesson = mIdx === 0 && lIdx === 0;
+                            return (
+                              <div
+                                key={lesson._id || lIdx}
+                                onClick={() => {
+                                  if (isFirstLesson || isEnrolled) {
+                                    onStartLearning(course._id);
+                                  } else {
+                                    onEnrollNow(course);
+                                  }
+                                }}
+                                style={{
+                                  display: 'flex',
+                                  justifyContent: 'space-between',
+                                  alignItems: 'center',
+                                  padding: '12px 24px',
+                                  borderBottom: lIdx < (module.lessons.length - 1) ? '1px solid #f1f5f9' : 'none',
+                                  fontSize: 14,
+                                  cursor: 'pointer',
+                                  background: isFirstLesson ? '#f0fdf4' : 'transparent',
+                                  transition: 'background 0.2s'
+                                }}
+                              >
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                                  {isEnrolled || isFirstLesson ? (
+                                    <Play size={15} color={isFirstLesson ? '#16a34a' : '#0056D2'} fill={isFirstLesson ? '#16a34a' : '#0056D2'} />
+                                  ) : (
+                                    <Lock size={15} color="#94a3b8" />
+                                  )}
+                                  <span style={{ color: isFirstLesson ? '#166534' : '#334155', fontWeight: isFirstLesson ? 700 : 500 }}>
+                                    {lesson.title}
                                   </span>
-                                )}
-                                <span style={{ fontSize: 12, color: '#94a3b8' }}>
-                                  {lesson.duration || '15 min'}
-                                </span>
+                                </div>
+
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                                  {isFirstLesson && (
+                                    <span style={{
+                                      fontSize: 11,
+                                      fontWeight: 800,
+                                      color: '#15803d',
+                                      background: '#dcfce7',
+                                      padding: '3px 8px',
+                                      borderRadius: 4
+                                    }}>
+                                      FREE TRIAL PREVIEW
+                                    </span>
+                                  )}
+                                  {!isFirstLesson && !isEnrolled && (
+                                    <span style={{
+                                      fontSize: 10,
+                                      fontWeight: 700,
+                                      color: '#dc2626',
+                                      background: '#fee2e2',
+                                      padding: '2px 6px',
+                                      borderRadius: 4,
+                                      display: 'inline-flex',
+                                      alignItems: 'center',
+                                      gap: 3
+                                    }}>
+                                      <Lock size={9} /> Locked
+                                    </span>
+                                  )}
+                                  <span style={{ fontSize: 12, color: '#94a3b8' }}>
+                                    {lesson.duration || '15 min'}
+                                  </span>
+                                </div>
                               </div>
-                            </div>
-                          ))}
+                            );
+                          })}
                         </div>
                       )}
                     </div>
@@ -481,11 +509,11 @@ export default function CourseDetailsPage({
                     onClick={() => onEnrollNow(course)}
                     style={{
                       width: '100%',
-                      background: 'linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)',
+                      background: '#0056D2',
                       color: '#ffffff',
                       border: 'none',
                       padding: '16px',
-                      borderRadius: 12,
+                      borderRadius: 10,
                       fontWeight: 800,
                       fontSize: 16,
                       cursor: 'pointer',
@@ -493,7 +521,7 @@ export default function CourseDetailsPage({
                       alignItems: 'center',
                       justifyContent: 'center',
                       gap: 8,
-                      boxShadow: '0 6px 20px rgba(79, 70, 229, 0.45)',
+                      boxShadow: '0 6px 20px rgba(0, 86, 210, 0.4)',
                       transition: 'transform 0.15s'
                     }}
                   >
@@ -502,20 +530,25 @@ export default function CourseDetailsPage({
                   </button>
 
                   <button
-                    onClick={() => onEnrollNow(course)}
+                    onClick={() => onStartLearning(course._id)}
                     style={{
                       width: '100%',
-                      background: '#f8fafc',
-                      color: '#334155',
-                      border: '1px solid #cbd5e1',
+                      background: '#f0fdf4',
+                      color: '#166534',
+                      border: '1.5px solid #86efac',
                       padding: '13px',
-                      borderRadius: 12,
-                      fontWeight: 700,
+                      borderRadius: 10,
+                      fontWeight: 800,
                       fontSize: 14,
-                      cursor: 'pointer'
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: 8
                     }}
                   >
-                    Buy Now
+                    <Play size={16} fill="#166534" />
+                    <span>Watch 1st Lesson Free (Trial)</span>
                   </button>
                 </div>
               )}

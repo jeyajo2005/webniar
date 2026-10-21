@@ -32,7 +32,13 @@ import {
   Sparkles,
   Search,
   ShieldCheck,
-  Video
+  Video,
+  Flame,
+  Zap,
+  Gift,
+  CheckCircle2,
+  QrCode,
+  Mail
 } from 'lucide-react';
 import { api } from '../services/api.js';
 
@@ -41,6 +47,7 @@ export default function LandingPage({
   onPaymentSuccess,
   onViewCourse,
   onEnrollCourse,
+  onStartLearning,
   onOpenIntroVideo,
   searchQuery = '',
   onSearch
@@ -51,6 +58,26 @@ export default function LandingPage({
   const [loadingCourses, setLoadingCourses] = useState(true);
   const [newsletterEmail, setNewsletterEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
+  const [leadForm, setLeadForm] = useState({
+    name: '',
+    email: '',
+    interest: 'AI & Machine Learning'
+  });
+  const [timeLeft, setTimeLeft] = useState({ days: 14, hours: 7, minutes: 46, seconds: 52 });
+
+  // Dynamic countdown timer for Masterclass
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setTimeLeft(prev => {
+        if (prev.seconds > 0) return { ...prev, seconds: prev.seconds - 1 };
+        if (prev.minutes > 0) return { ...prev, minutes: 59, seconds: 59 };
+        if (prev.hours > 0) return { ...prev, hours: prev.hours - 1, minutes: 59, seconds: 59 };
+        if (prev.days > 0) return { ...prev, days: prev.days - 1, hours: 23, minutes: 59, seconds: 59 };
+        return prev;
+      });
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   // Sync prop searchQuery
   useEffect(() => {
@@ -100,6 +127,17 @@ export default function LandingPage({
     }
   };
 
+  const handleLeadSubmit = (e) => {
+    e.preventDefault();
+    if (leadForm.interest) {
+      if (leadForm.interest.includes('AI')) setSelectedCategory('AI & Agents');
+      else if (leadForm.interest.includes('Full-Stack')) setSelectedCategory('Full-Stack Development');
+      else if (leadForm.interest.includes('Cloud')) setSelectedCategory('Cloud & DevOps');
+      else if (leadForm.interest.includes('Cyber')) setSelectedCategory('Cyber Security');
+    }
+    scrollToCourses();
+  };
+
   const handleSubscribe = (e) => {
     e.preventDefault();
     if (newsletterEmail) {
@@ -120,200 +158,445 @@ export default function LandingPage({
 
   return (
     <div style={{ background: '#f8fafc', color: '#0f172a' }}>
-      {/* 1. HERO SECTION WITH VIDEO BANNER TRIGGER */}
+      {/* 1. KAIRA HERO SECTION (ULTRA-ATTRACTIVE & MATCHING IMAGE 1) */}
       <section style={{
-        background: 'linear-gradient(135deg, #0f172a 0%, #1e1b4b 60%, #312e81 100%)',
-        color: '#ffffff',
-        padding: '70px 0 90px',
+        background: 'radial-gradient(ellipse at 20% 0%, rgba(59, 130, 246, 0.45) 0%, transparent 60%), radial-gradient(ellipse at 80% 100%, rgba(30, 58, 138, 0.5) 0%, transparent 60%), linear-gradient(160deg, #1d4ed8 0%, #2563eb 45%, #1e40af 100%)',
+        padding: '36px 20px 60px',
         position: 'relative',
         overflow: 'hidden'
       }}>
+        {/* Subtle Decorative Ambient Glow Blobs */}
         <div style={{
           position: 'absolute',
-          inset: 0,
-          background: 'radial-gradient(circle at 80% 20%, rgba(99, 102, 241, 0.25) 0%, transparent 60%)',
+          top: -80,
+          left: '10%',
+          width: 320,
+          height: 320,
+          borderRadius: '50%',
+          background: 'rgba(255, 255, 255, 0.08)',
+          filter: 'blur(50px)',
+          pointerEvents: 'none'
+        }} />
+        <div style={{
+          position: 'absolute',
+          bottom: -80,
+          right: '5%',
+          width: 380,
+          height: 380,
+          borderRadius: '50%',
+          background: 'rgba(56, 189, 248, 0.15)',
+          filter: 'blur(60px)',
           pointerEvents: 'none'
         }} />
 
-        <div className="container" style={{ maxWidth: 1240, margin: '0 auto', padding: '0 24px', position: 'relative', zIndex: 10 }}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.2fr) minmax(0, 0.8fr)', gap: 48, alignItems: 'center' }} className="hero-grid">
-            {/* Left Hero Text */}
-            <div>
-              <div style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 8,
-                background: 'rgba(99, 102, 241, 0.25)',
-                border: '1px solid rgba(129, 140, 248, 0.4)',
-                borderRadius: 9999,
-                padding: '6px 16px',
-                color: '#c7d2fe',
-                fontSize: 13,
-                fontWeight: 600,
-                marginBottom: 20
-              }}>
-                <Sparkles size={15} color="#a78bfa" />
-                <span>Next-Generation Online Learning Platform 2026</span>
-              </div>
-
-              <h1 style={{
-                fontSize: 'clamp(32px, 4.4vw, 54px)',
-                fontWeight: 800,
-                lineHeight: 1.15,
-                letterSpacing: '-0.03em',
-                marginBottom: 18
-              }}>
-                Upgrade Your Skills. <br />
-                <span style={{
-                  background: 'linear-gradient(135deg, #a78bfa 0%, #38bdf8 100%)',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent'
-                }}>
-                  Transform Your Future.
-                </span>
-              </h1>
-
-              <p style={{
-                fontSize: 16,
-                color: '#cbd5e1',
-                lineHeight: 1.65,
-                maxWidth: 580,
-                marginBottom: 28
-              }}>
-                Join over 45,000 engineers and leaders learning cutting-edge AI swarms, full-stack architectures, and cloud microservices through interactive live webinars and verified on-demand video courses.
-              </p>
-
-              {/* Action Buttons */}
-              <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', alignItems: 'center' }}>
-                <button
-                  onClick={scrollToCourses}
-                  style={{
-                    background: 'linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)',
-                    color: '#ffffff',
-                    border: 'none',
-                    padding: '16px 32px',
-                    borderRadius: 9999,
-                    fontSize: 16,
-                    fontWeight: 700,
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 8,
-                    boxShadow: '0 8px 25px rgba(79, 70, 229, 0.5)'
-                  }}
-                >
-                  <BookOpen size={18} />
-                  <span>Explore Courses</span>
-                </button>
-
-                {onOpenIntroVideo && (
-                  <button
-                    onClick={onOpenIntroVideo}
-                    style={{
-                      background: 'rgba(255, 255, 255, 0.1)',
-                      color: '#ffffff',
-                      border: '1px solid rgba(255, 255, 255, 0.3)',
-                      padding: '15px 26px',
-                      borderRadius: 9999,
-                      fontSize: 15,
-                      fontWeight: 700,
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 10,
-                      backdropFilter: 'blur(8px)'
-                    }}
-                  >
-                    <div style={{ width: 24, height: 24, borderRadius: '50%', background: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <Play size={12} fill="#0f172a" color="#0f172a" style={{ marginLeft: 2 }} />
-                    </div>
-                    <span>Watch Webinar Class Video</span>
-                  </button>
-                )}
-              </div>
-
-              {/* Quick Trust Badges */}
-              <div style={{ display: 'flex', gap: 24, marginTop: 36, borderTop: '1px solid rgba(255, 255, 255, 0.12)', paddingTop: 20 }}>
-                <div>
-                  <span style={{ fontSize: 20, fontWeight: 800, color: '#ffffff' }}>45,000+</span>
-                  <p style={{ fontSize: 12, color: '#94a3b8' }}>Enrolled Students</p>
-                </div>
-                <div>
-                  <span style={{ fontSize: 20, fontWeight: 800, color: '#facc15' }}>4.9 ★</span>
-                  <p style={{ fontSize: 12, color: '#94a3b8' }}>Average Rating</p>
-                </div>
-                <div>
-                  <span style={{ fontSize: 20, fontWeight: 800, color: '#38bdf8' }}>100%</span>
-                  <p style={{ fontSize: 12, color: '#94a3b8' }}>Verifiable Certificates</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Right Hero Video Card Thumbnail */}
-            <div style={{ position: 'relative' }}>
-              <div 
-                onClick={onOpenIntroVideo}
-                style={{
-                  position: 'relative',
-                  borderRadius: 20,
-                  overflow: 'hidden',
-                  border: '2px solid rgba(255, 255, 255, 0.15)',
-                  boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
-                  cursor: 'pointer',
-                  aspectRatio: '16/10'
-                }}
-              >
-                <img
-                  src="/assets/female_presenter_blazer.jpg"
-                  alt="Webinar Trainer on Stage"
-                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                />
+        <div style={{ maxWidth: 1220, margin: '0 auto', position: 'relative', zIndex: 10 }}>
+          {/* Main White Card matching Image 1 with Ultra-Premium Aesthetics */}
+          <div style={{
+            background: '#ffffff',
+            borderRadius: 28,
+            padding: 'clamp(36px, 4.5vw, 56px) clamp(24px, 4.5vw, 60px)',
+            boxShadow: '0 35px 80px -15px rgba(15, 23, 42, 0.38), 0 0 0 1px rgba(255, 255, 255, 0.5)',
+            position: 'relative',
+            overflow: 'hidden'
+          }}>
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'minmax(0, 1.05fr) minmax(0, 0.95fr)',
+              gap: 48,
+              alignItems: 'center'
+            }} className="hero-grid">
+              
+              {/* Left Column: Form & Content */}
+              <div>
+                {/* Live Pill Badge */}
                 <div style={{
-                  position: 'absolute',
-                  inset: 0,
-                  background: 'linear-gradient(to top, rgba(15, 23, 42, 0.8) 0%, rgba(15, 23, 42, 0.2) 60%)',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'space-between',
-                  padding: 24
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 8,
+                  background: '#eff6ff',
+                  border: '1px solid #bfdbfe',
+                  borderRadius: 9999,
+                  padding: '6px 14px',
+                  marginBottom: 16
                 }}>
-                  <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                    <span style={{ background: '#ef4444', color: '#ffffff', fontSize: 11, fontWeight: 800, padding: '4px 10px', borderRadius: 9999, display: 'flex', alignItems: 'center', gap: 6 }}>
-                      <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#ffffff', animation: 'pulse 1.5s infinite' }} />
-                      LIVE MASTERCLASS
-                    </span>
+                  <span style={{
+                    width: 7,
+                    height: 7,
+                    borderRadius: '50%',
+                    background: '#22c55e',
+                    boxShadow: '0 0 8px #22c55e',
+                    display: 'inline-block'
+                  }} />
+                  <span style={{ fontSize: 12, fontWeight: 700, color: '#1d4ed8', letterSpacing: '0.02em' }}>
+                    ✨ #1 Online Skill Platform • 1st Video Lesson Free on All Courses
+                  </span>
+                </div>
+
+                {/* Main Headline */}
+                <h1 style={{
+                  fontSize: 'clamp(36px, 4.5vw, 56px)',
+                  fontWeight: 900,
+                  color: '#1e3a8a',
+                  lineHeight: 1.12,
+                  letterSpacing: '-0.035em',
+                  marginBottom: 16
+                }}>
+                  Unlock Knowledge, <br />
+                  <span style={{
+                    background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 50%, #4338ca 100%)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    filter: 'drop-shadow(0 2px 8px rgba(37, 99, 235, 0.2))'
+                  }}>
+                    Unlock Your Future
+                  </span>
+                </h1>
+
+                <p style={{
+                  fontSize: 16,
+                  color: '#64748b',
+                  lineHeight: 1.65,
+                  maxWidth: 480,
+                  marginBottom: 28
+                }}>
+                  Learn from industry experts with flexible online courses across multiple fields. Start with lesson 1 free, build job-ready portfolios, and earn accredited certificates.
+                </p>
+
+                {/* Inquiry Lead Form matching Image 1 with Modern Icons */}
+                <form onSubmit={handleLeadSubmit} style={{ maxWidth: 470, marginBottom: 32 }}>
+                  {/* Name Input with User Icon */}
+                  <div style={{ position: 'relative', marginBottom: 14 }}>
+                    <User size={18} color="#94a3b8" style={{ position: 'absolute', left: 16, top: 16, pointerEvents: 'none' }} />
+                    <input
+                      type="text"
+                      placeholder="Insert Your Name"
+                      value={leadForm.name}
+                      onChange={(e) => setLeadForm({ ...leadForm, name: e.target.value })}
+                      style={{
+                        width: '100%',
+                        padding: '14px 18px 14px 44px',
+                        borderRadius: 12,
+                        border: '1.5px solid #e2e8f0',
+                        background: '#f8fafc',
+                        fontSize: 15,
+                        color: '#0f172a',
+                        outline: 'none',
+                        boxSizing: 'border-box',
+                        transition: 'all 0.2s ease'
+                      }}
+                      onFocus={(e) => {
+                        e.target.style.borderColor = '#2563eb';
+                        e.target.style.background = '#ffffff';
+                        e.target.style.boxShadow = '0 0 0 4px rgba(37, 99, 235, 0.12)';
+                      }}
+                      onBlur={(e) => {
+                        e.target.style.borderColor = '#e2e8f0';
+                        e.target.style.background = '#f8fafc';
+                        e.target.style.boxShadow = 'none';
+                      }}
+                    />
                   </div>
 
-                  <div>
-                    <div style={{
-                      width: 60,
-                      height: 60,
-                      borderRadius: '50%',
-                      background: '#ffffff',
+                  {/* Email & Interest Row with Icons */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 16 }}>
+                    <div style={{ position: 'relative' }}>
+                      <Mail size={17} color="#94a3b8" style={{ position: 'absolute', left: 16, top: 16, pointerEvents: 'none' }} />
+                      <input
+                        type="email"
+                        placeholder="Email"
+                        value={leadForm.email}
+                        onChange={(e) => setLeadForm({ ...leadForm, email: e.target.value })}
+                        style={{
+                          width: '100%',
+                          padding: '14px 18px 14px 42px',
+                          borderRadius: 12,
+                          border: '1.5px solid #e2e8f0',
+                          background: '#f8fafc',
+                          fontSize: 15,
+                          color: '#0f172a',
+                          outline: 'none',
+                          boxSizing: 'border-box',
+                          transition: 'all 0.2s ease'
+                        }}
+                        onFocus={(e) => {
+                          e.target.style.borderColor = '#2563eb';
+                          e.target.style.background = '#ffffff';
+                          e.target.style.boxShadow = '0 0 0 4px rgba(37, 99, 235, 0.12)';
+                        }}
+                        onBlur={(e) => {
+                          e.target.style.borderColor = '#e2e8f0';
+                          e.target.style.background = '#f8fafc';
+                          e.target.style.boxShadow = 'none';
+                        }}
+                      />
+                    </div>
+
+                    <div style={{ position: 'relative' }}>
+                      <Sparkles size={16} color="#f59e0b" style={{ position: 'absolute', left: 14, top: 16, pointerEvents: 'none' }} />
+                      <select
+                        value={leadForm.interest}
+                        onChange={(e) => setLeadForm({ ...leadForm, interest: e.target.value })}
+                        style={{
+                          width: '100%',
+                          padding: '14px 14px 14px 38px',
+                          borderRadius: 12,
+                          border: '1.5px solid #e2e8f0',
+                          background: '#f8fafc',
+                          fontSize: 14,
+                          fontWeight: 500,
+                          color: leadForm.interest ? '#0f172a' : '#94a3b8',
+                          outline: 'none',
+                          boxSizing: 'border-box',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s ease'
+                        }}
+                        onFocus={(e) => {
+                          e.target.style.borderColor = '#2563eb';
+                          e.target.style.background = '#ffffff';
+                        }}
+                        onBlur={(e) => {
+                          e.target.style.borderColor = '#e2e8f0';
+                          e.target.style.background = '#f8fafc';
+                        }}
+                      >
+                        <option value="AI & Machine Learning">AI & Machine Learning</option>
+                        <option value="Full-Stack Web Dev">Full-Stack Web Dev</option>
+                        <option value="Cloud Architecture">Cloud Architecture</option>
+                        <option value="Data Science & ML">Data Science & ML</option>
+                        <option value="Cyber Security">Cyber Security</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Coral CTA Button with Hover Polish */}
+                  <button
+                    type="submit"
+                    style={{
+                      width: '100%',
+                      padding: '16px 28px',
+                      borderRadius: 12,
+                      background: 'linear-gradient(135deg, #ff6b4a 0%, #ff5230 100%)',
+                      color: '#ffffff',
+                      fontSize: 16,
+                      fontWeight: 800,
+                      border: 'none',
+                      cursor: 'pointer',
+                      boxShadow: '0 10px 25px -4px rgba(255, 107, 74, 0.55)',
+                      transition: 'all 0.25s ease',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      margin: '0 auto 12px',
-                      boxShadow: '0 8px 30px rgba(0,0,0,0.5)',
-                      transform: 'scale(1)',
-                      transition: 'transform 0.2s'
-                    }}>
-                      <Play size={24} fill="#4f46e5" color="#4f46e5" style={{ marginLeft: 3 }} />
+                      gap: 8,
+                      letterSpacing: '0.01em'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.transform = 'translateY(-2px) scale(1.01)';
+                      e.currentTarget.style.boxShadow = '0 14px 30px -4px rgba(255, 107, 74, 0.7)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                      e.currentTarget.style.boxShadow = '0 10px 25px -4px rgba(255, 107, 74, 0.55)';
+                    }}
+                  >
+                    <span>Explore Courses</span>
+                    <ArrowRight size={18} />
+                  </button>
+
+                  <div style={{ display: 'flex', justifyContent: 'center', gap: 16, marginTop: 12, fontSize: 12, color: '#64748b' }}>
+                    <span>✓ 1st Lesson 100% Free</span>
+                    <span>•</span>
+                    <span>✓ Verifiable Certificate</span>
+                    <span>•</span>
+                    <span>✓ No Credit Card Required</span>
+                  </div>
+                </form>
+
+                {/* 3 Metric Stats matching Image 1 */}
+                <div style={{
+                  display: 'flex',
+                  gap: 36,
+                  alignItems: 'center',
+                  paddingTop: 18,
+                  borderTop: '1px solid #f1f5f9'
+                }}>
+                  <div>
+                    <div style={{ fontSize: 32, fontWeight: 900, color: '#1d4ed8', lineHeight: 1 }}>500+</div>
+                    <div style={{ fontSize: 13, color: '#64748b', fontWeight: 600, marginTop: 4 }}>Courses</div>
+                  </div>
+                  <div style={{ height: 36, width: 1, background: '#e2e8f0' }} />
+                  <div>
+                    <div style={{ fontSize: 32, fontWeight: 900, color: '#1d4ed8', lineHeight: 1 }}>1M+</div>
+                    <div style={{ fontSize: 13, color: '#64748b', fontWeight: 600, marginTop: 4 }}>Students</div>
+                  </div>
+                  <div style={{ height: 36, width: 1, background: '#e2e8f0' }} />
+                  <div>
+                    <div style={{ fontSize: 32, fontWeight: 900, color: '#1d4ed8', lineHeight: 1 }}>4.9</div>
+                    <div style={{ fontSize: 13, color: '#64748b', fontWeight: 600, marginTop: 4 }}>Rating ★</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Right Column: Warm Yellow Backdrop + Cheerful Students + Depth Badges */}
+              <div style={{ position: 'relative', display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 450 }}>
+                
+                {/* Organic Amber/Yellow Backdrop Shape matching Image 1 */}
+                <div style={{
+                  position: 'absolute',
+                  width: '94%',
+                  height: '92%',
+                  right: '0%',
+                  top: '4%',
+                  borderRadius: '52% 48% 62% 38% / 46% 52% 48% 54%',
+                  background: 'linear-gradient(135deg, #f59e0b 0%, #fbbf24 60%, #fde047 100%)',
+                  zIndex: 1,
+                  transform: 'rotate(-4deg)',
+                  boxShadow: '0 20px 40px rgba(245, 158, 11, 0.25)'
+                }} />
+
+                {/* Floating Depth Badge 1: Top Left */}
+                <div style={{
+                  position: 'absolute',
+                  top: 10,
+                  left: -12,
+                  zIndex: 5,
+                  background: 'rgba(255, 255, 255, 0.95)',
+                  backdropFilter: 'blur(10px)',
+                  borderRadius: 14,
+                  padding: '8px 14px',
+                  boxShadow: '0 12px 28px rgba(15, 23, 42, 0.12)',
+                  border: '1px solid #e2e8f0',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 8
+                }}>
+                  <div style={{ width: 28, height: 28, borderRadius: 8, background: '#dcfce7', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Award size={16} color="#16a34a" />
+                  </div>
+                  <div>
+                    <div style={{ fontSize: 12, fontWeight: 800, color: '#0f172a' }}>98.4% Placement</div>
+                    <div style={{ fontSize: 10, color: '#64748b' }}>Google, Meta, TCS</div>
+                  </div>
+                </div>
+
+                {/* Floating Depth Badge 2: Top Right */}
+                <div style={{
+                  position: 'absolute',
+                  top: 24,
+                  right: -10,
+                  zIndex: 5,
+                  background: 'rgba(255, 255, 255, 0.95)',
+                  backdropFilter: 'blur(10px)',
+                  borderRadius: 14,
+                  padding: '8px 14px',
+                  boxShadow: '0 12px 28px rgba(15, 23, 42, 0.12)',
+                  border: '1px solid #e2e8f0',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 8
+                }}>
+                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#22c55e', display: 'inline-block' }} />
+                  <span style={{ fontSize: 12, fontWeight: 800, color: '#0f172a' }}>Live Mentor Q&A</span>
+                </div>
+
+                {/* Cheerful Students Cutout matching Image 1 */}
+                <img
+                  src="/assets/kaira_hero_students.jpg"
+                  alt="Kaira Students"
+                  style={{
+                    width: '100%',
+                    maxWidth: 480,
+                    position: 'relative',
+                    zIndex: 2,
+                    display: 'block',
+                    objectFit: 'contain',
+                    filter: 'drop-shadow(0 15px 25px rgba(0,0,0,0.12))'
+                  }}
+                />
+
+                {/* Joanne H. Floating Testimonial Card matching Image 1 */}
+                <div style={{
+                  position: 'absolute',
+                  bottom: -10,
+                  right: -10,
+                  zIndex: 5,
+                  background: '#ffffff',
+                  borderRadius: 18,
+                  padding: '16px 20px',
+                  maxWidth: 250,
+                  boxShadow: '0 20px 40px rgba(15, 23, 42, 0.18)',
+                  border: '1px solid #f1f5f9',
+                  transition: 'transform 0.2s'
+                }}>
+                  {/* Rating Stars & Heart */}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                    <div style={{ display: 'flex', gap: 2 }}>
+                      {[...Array(5)].map((_, i) => (
+                        <span key={i} style={{ color: '#f59e0b', fontSize: 14 }}>★</span>
+                      ))}
                     </div>
-                    <p style={{ textAlign: 'center', color: '#ffffff', fontSize: 14, fontWeight: 700 }}>
-                      Click to Watch Trainer Class Presentation
-                    </p>
+                    <span style={{
+                      background: '#ef4444',
+                      color: '#ffffff',
+                      borderRadius: '50%',
+                      width: 20,
+                      height: 20,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: 10
+                    }}>
+                      ❤️
+                    </span>
                   </div>
 
-                  <p style={{ color: '#cbd5e1', fontSize: 12 }}>
-                    Featured Presenter: <strong>Dr. Elena Vance</strong> • Principal AI Architect
+                  <div style={{ fontSize: 13, fontWeight: 800, color: '#0f172a', marginBottom: 4 }}>
+                    Joanne H.
+                  </div>
+                  <p style={{ fontSize: 11, color: '#64748b', lineHeight: 1.45, margin: 0 }}>
+                    Clear, easy to use, and the courses are amazing! I love how simple it is to find what I need.
                   </p>
                 </div>
               </div>
+
             </div>
+
+            {/* Bottom Enterprise Partners Strip */}
+            <div style={{
+              marginTop: 40,
+              paddingTop: 24,
+              borderTop: '1px solid #f1f5f9',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              flexWrap: 'wrap',
+              gap: 20
+            }}>
+              <span style={{ fontSize: 12, fontWeight: 700, textTransform: 'uppercase', color: '#94a3b8', letterSpacing: '0.06em' }}>
+                Accredited Curriculum & Career Partners:
+              </span>
+              <div style={{
+                display: 'flex',
+                gap: 'clamp(16px, 3.5vw, 36px)',
+                alignItems: 'center',
+                flexWrap: 'wrap',
+                fontWeight: 900,
+                fontSize: 13,
+                color: '#64748b',
+                letterSpacing: '0.08em'
+              }}>
+                <span>GOOGLE</span>
+                <span>STANFORD ONLINE</span>
+                <span>DEEPLEARNING.AI</span>
+                <span>META</span>
+                <span>MICROSOFT</span>
+                <span>ZOHO</span>
+              </div>
+            </div>
+
           </div>
         </div>
       </section>
+
 
       {/* 2. FEATURED COURSES CATALOG SECTION (Udemy / Coursera Style) */}
       <section id="featured-courses-section" style={{ padding: '80px 0', background: '#f8fafc' }}>
@@ -459,9 +742,25 @@ export default function LandingPage({
 
                     {/* Card Content */}
                     <div style={{ padding: 22, flex: 1, display: 'flex', flexDirection: 'column' }}>
-                      <span style={{ fontSize: 11, fontWeight: 700, color: '#4f46e5', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                        {course.category}
-                      </span>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+                        <span style={{ fontSize: 11, fontWeight: 800, color: '#0056D2', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                          {course.partner || 'DeepLearning.AI'}
+                        </span>
+                        <span style={{
+                          background: '#ecfdf5',
+                          color: '#047857',
+                          border: '1px solid #a7f3d0',
+                          fontSize: 10,
+                          fontWeight: 800,
+                          padding: '2px 7px',
+                          borderRadius: 4,
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: 4
+                        }}>
+                          <Play size={8} fill="#047857" /> 1st Video Free
+                        </span>
+                      </div>
 
                       <h3
                         onClick={() => onViewCourse && onViewCourse(course._id)}
@@ -470,7 +769,7 @@ export default function LandingPage({
                           fontWeight: 800,
                           color: '#0f172a',
                           lineHeight: 1.35,
-                          margin: '6px 0 8px',
+                          margin: '4px 0 8px',
                           cursor: 'pointer'
                         }}
                       >
@@ -522,7 +821,7 @@ export default function LandingPage({
                       {/* Pricing Row */}
                       <div style={{
                         marginTop: 'auto',
-                        paddingTop: 16,
+                        paddingTop: 14,
                         borderTop: '1px solid #f1f5f9',
                         display: 'flex',
                         justifyContent: 'space-between',
@@ -541,44 +840,57 @@ export default function LandingPage({
                         </div>
                       </div>
 
-                      {/* Action Buttons: "View Course" and "Enroll Now" */}
+                      {/* Coursera Freemium Action Buttons */}
                       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginTop: 14 }}>
                         <button
-                          onClick={() => onViewCourse && onViewCourse(course._id)}
-                          style={{
-                            background: '#f8fafc',
-                            border: '1px solid #cbd5e1',
-                            color: '#334155',
-                            padding: '10px',
-                            borderRadius: 8,
-                            fontSize: 13,
-                            fontWeight: 700,
-                            cursor: 'pointer',
-                            textAlign: 'center'
+                          onClick={() => {
+                            if (onStartLearning) {
+                              onStartLearning(course._id);
+                            } else if (onViewCourse) {
+                              onViewCourse(course._id);
+                            }
                           }}
-                        >
-                          View Course
-                        </button>
-
-                        <button
-                          onClick={() => onEnrollCourse && onEnrollCourse(course)}
                           style={{
-                            background: 'linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)',
-                            border: 'none',
-                            color: '#ffffff',
-                            padding: '10px',
-                            borderRadius: 8,
-                            fontSize: 13,
-                            fontWeight: 700,
+                            background: '#f0fdf4',
+                            border: '1.5px solid #86efac',
+                            color: '#15803d',
+                            padding: '10px 8px',
+                            borderRadius: 6,
+                            fontSize: 12,
+                            fontWeight: 800,
                             cursor: 'pointer',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
                             gap: 6,
-                            boxShadow: '0 4px 12px rgba(79, 70, 229, 0.35)'
+                            transition: 'all 0.2s'
+                          }}
+                          title="Watch 1st lesson for free without payment"
+                        >
+                          <Play size={13} fill="#15803d" />
+                          <span>Watch 1st Free</span>
+                        </button>
+
+                        <button
+                          onClick={() => onEnrollCourse && onEnrollCourse(course)}
+                          style={{
+                            background: '#0056D2',
+                            border: 'none',
+                            color: '#ffffff',
+                            padding: '10px 8px',
+                            borderRadius: 6,
+                            fontSize: 13,
+                            fontWeight: 800,
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: 6,
+                            boxShadow: '0 2px 8px rgba(0, 86, 210, 0.3)',
+                            transition: 'all 0.2s'
                           }}
                         >
-                          <span>Enroll Now</span>
+                          <span>Enroll ₹{course.price || 499}</span>
                           <ArrowRight size={14} />
                         </button>
                       </div>
@@ -592,111 +904,431 @@ export default function LandingPage({
       </section>
 
       {/* 3. UPCOMING LIVE WEBINAR SPOTLIGHT SECTION */}
+      {/* 3. UNIQUE VIP MASTERCLASS STUDIO TICKET SECTION */}
       <section id="webinar-spotlight-section" style={{
-        padding: '80px 0',
-        background: '#ffffff',
-        borderTop: '1px solid #e2e8f0',
-        borderBottom: '1px solid #e2e8f0'
+        padding: '90px 0',
+        background: '#f8fafc',
+        position: 'relative'
       }}>
         <div className="container" style={{ maxWidth: 1240, margin: '0 auto', padding: '0 24px' }}>
-          <div style={{
-            background: 'linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%)',
-            borderRadius: 24,
-            padding: '48px 40px',
-            color: '#ffffff',
-            boxShadow: '0 25px 50px -12px rgba(15, 23, 42, 0.3)',
-            display: 'grid',
-            gridTemplateColumns: 'minmax(0, 1.2fr) minmax(0, 0.8fr)',
-            gap: 40,
-            alignItems: 'center'
-          }} className="hero-grid">
-            <div>
-              <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: '#ef4444', color: '#ffffff', fontSize: 11, fontWeight: 800, padding: '4px 12px', borderRadius: 9999, marginBottom: 14 }}>
-                <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#ffffff', animation: 'pulse 1.5s infinite' }} />
-                <span>UPCOMING LIVE INTERACTIVE MASTERCLASS</span>
-              </div>
-
-              <h2 style={{ fontSize: 'clamp(24px, 3.2vw, 36px)', fontWeight: 800, lineHeight: 1.25, letterSpacing: '-0.02em', marginBottom: 12 }}>
-                Full-Stack AI & Autonomous Agents Masterclass
-              </h2>
-
-              <p style={{ fontSize: 15, color: '#cbd5e1', lineHeight: 1.6, marginBottom: 20 }}>
-                Build, deploy, and monetize production autonomous AI agents with real-time streaming, tool calling, and automated GST billing. Live hot-seat architecture evaluations with Dr. Elena Vance.
-              </p>
-
-              {/* Webinar Details Row */}
-              <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap', marginBottom: 24, fontSize: 14 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#e0e7ff' }}>
-                  <Calendar size={18} color="#a5b4fc" />
-                  <span><strong>Date:</strong> November 4, 2026</span>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#e0e7ff' }}>
-                  <Clock size={18} color="#a5b4fc" />
-                  <span><strong>Time:</strong> 07:00 PM IST (180 mins)</span>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#4ade80' }}>
-                  <Users size={18} color="#4ade80" />
-                  <span><strong>Seats:</strong> 462 / 500 Booked</span>
-                </div>
-              </div>
-
-              <button
-                onClick={scrollToPaymentSection}
-                style={{
-                  background: 'linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)',
-                  color: '#ffffff',
-                  border: 'none',
-                  padding: '16px 36px',
-                  borderRadius: 9999,
-                  fontSize: 16,
-                  fontWeight: 800,
-                  cursor: 'pointer',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: 10,
-                  boxShadow: '0 8px 25px rgba(79, 70, 229, 0.5)'
-                }}
-              >
-                <span>Reserve VIP Live Seat (₹499)</span>
-                <ArrowRight size={18} />
-              </button>
-            </div>
-
-            {/* Right: Speaker Bio Card */}
+          
+          {/* Section Super-Header */}
+          <div style={{ textAlign: 'center', maxWidth: 700, margin: '0 auto 40px' }}>
             <div style={{
-              background: 'rgba(255, 255, 255, 0.08)',
-              border: '1px solid rgba(255, 255, 255, 0.15)',
-              borderRadius: 20,
-              padding: 28,
-              backdropFilter: 'blur(12px)'
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 8,
+              background: 'rgba(239, 68, 68, 0.1)',
+              border: '1px solid rgba(239, 68, 68, 0.25)',
+              color: '#dc2626',
+              fontSize: 12,
+              fontWeight: 800,
+              padding: '6px 16px',
+              borderRadius: 9999,
+              marginBottom: 12,
+              letterSpacing: '0.04em'
             }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 16 }}>
-                <img
-                  src="/assets/female_presenter_blazer.jpg"
-                  alt="Dr. Elena Vance"
-                  style={{ width: 70, height: 70, borderRadius: '50%', objectFit: 'cover', border: '2px solid #818cf8' }}
-                />
-                <div>
-                  <h4 style={{ fontSize: 18, fontWeight: 800, color: '#ffffff' }}>Dr. Elena Vance</h4>
-                  <p style={{ fontSize: 12, color: '#a5b4fc', marginTop: 2 }}>Principal AI Systems Architect</p>
-                  <p style={{ fontSize: 11, color: '#facc15', marginTop: 4 }}>★ 4.98 / 5.0 (3,800+ reviews)</p>
+              <Flame size={15} color="#ef4444" />
+              <span>OFFICIAL FLAGSHIP MASTERCLASS • NOVEMBER 4, 2026</span>
+            </div>
+            <h2 style={{
+              fontSize: 'clamp(28px, 3.4vw, 42px)',
+              fontWeight: 900,
+              color: '#0f172a',
+              letterSpacing: '-0.03em',
+              lineHeight: 1.2
+            }}>
+              Exclusive VIP Masterclass Pass
+            </h2>
+            <p style={{ fontSize: 16, color: '#64748b', marginTop: 10 }}>
+              Join senior engineers and AI architects in this high-intensity 3-hour live cohort session.
+            </p>
+          </div>
+
+          {/* Luxury VIP Studio Ticket Frame */}
+          <div style={{
+            position: 'relative',
+            background: 'linear-gradient(135deg, #090e1a 0%, #111827 50%, #0d1222 100%)',
+            borderRadius: 28,
+            boxShadow: '0 30px 70px -15px rgba(15, 23, 42, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.1), 0 0 40px rgba(79, 70, 229, 0.18)',
+            overflow: 'hidden',
+            color: '#ffffff'
+          }}>
+            {/* Ambient Background Glow Effect */}
+            <div style={{
+              position: 'absolute',
+              top: -60,
+              right: -60,
+              width: 300,
+              height: 300,
+              borderRadius: '50%',
+              background: 'radial-gradient(circle, rgba(99, 102, 241, 0.25) 0%, transparent 70%)',
+              pointerEvents: 'none'
+            }} />
+            <div style={{
+              position: 'absolute',
+              bottom: -60,
+              left: -60,
+              width: 300,
+              height: 300,
+              borderRadius: '50%',
+              background: 'radial-gradient(circle, rgba(236, 72, 153, 0.18) 0%, transparent 70%)',
+              pointerEvents: 'none'
+            }} />
+
+            {/* Ticket Notch Cutouts (Simulated Perforation Edge at 65% width) */}
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'minmax(0, 1.25fr) minmax(0, 0.75fr)',
+              position: 'relative'
+            }} className="hero-grid">
+              
+              {/* LEFT PANE: Admission Ticket Main Body */}
+              <div style={{
+                padding: 'clamp(32px, 4vw, 52px)',
+                borderRight: '2px dashed rgba(255, 255, 255, 0.15)',
+                position: 'relative'
+              }}>
+                {/* Ticket Top Meta Row */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, flexWrap: 'wrap', gap: 12 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <span style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 6,
+                      background: 'rgba(239, 68, 68, 0.2)',
+                      border: '1px solid rgba(239, 68, 68, 0.4)',
+                      color: '#f87171',
+                      fontSize: 11,
+                      fontWeight: 800,
+                      padding: '4px 12px',
+                      borderRadius: 9999
+                    }}>
+                      <span className="live-indicator-dot" style={{ width: 6, height: 6, borderRadius: '50%', background: '#ef4444' }} />
+                      LIVE INTERACTIVE
+                    </span>
+                    <span style={{ fontSize: 12, color: '#94a3b8', fontFamily: 'monospace' }}>
+                      PASS #KAIRA-VIP-8821
+                    </span>
+                  </div>
+
+                  <span style={{
+                    background: 'rgba(245, 158, 11, 0.15)',
+                    border: '1px solid rgba(245, 158, 11, 0.3)',
+                    color: '#fbbf24',
+                    fontSize: 11,
+                    fontWeight: 800,
+                    padding: '4px 10px',
+                    borderRadius: 6,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 6
+                  }}>
+                    <Zap size={13} />
+                    <span>ONLY 38 SEATS LEFT</span>
+                  </span>
+                </div>
+
+                {/* Masterclass Headline */}
+                <h3 style={{
+                  fontSize: 'clamp(26px, 3.2vw, 38px)',
+                  fontWeight: 900,
+                  lineHeight: 1.2,
+                  letterSpacing: '-0.025em',
+                  marginBottom: 14,
+                  color: '#ffffff'
+                }}>
+                  Full-Stack AI &{' '}
+                  <span style={{
+                    background: 'linear-gradient(135deg, #38bdf8 0%, #818cf8 50%, #c084fc 100%)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent'
+                  }}>
+                    Autonomous Agents
+                  </span>{' '}
+                  Masterclass
+                </h3>
+
+                <p style={{
+                  fontSize: 15,
+                  color: '#cbd5e1',
+                  lineHeight: 1.65,
+                  marginBottom: 24,
+                  maxWidth: 620
+                }}>
+                  Build, deploy, and monetize production autonomous AI agents with real-time streaming, tool calling, and automated GST billing. Live hot-seat architecture evaluations with Dr. Elena Vance.
+                </p>
+
+                {/* Live Countdown Display Cards */}
+                <div style={{ marginBottom: 26 }}>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>
+                    Live Studio Broadcast Starts In:
+                  </div>
+                  <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+                    {[
+                      { label: 'Days', val: String(timeLeft.days).padStart(2, '0') },
+                      { label: 'Hours', val: String(timeLeft.hours).padStart(2, '0') },
+                      { label: 'Minutes', val: String(timeLeft.minutes).padStart(2, '0') },
+                      { label: 'Seconds', val: String(timeLeft.seconds).padStart(2, '0') }
+                    ].map((slot, sIdx) => (
+                      <div key={sIdx} style={{
+                        background: 'rgba(255, 255, 255, 0.06)',
+                        border: '1px solid rgba(255, 255, 255, 0.12)',
+                        borderRadius: 12,
+                        padding: '10px 16px',
+                        textAlign: 'center',
+                        minWidth: 68
+                      }}>
+                        <div style={{ fontSize: 24, fontWeight: 900, color: '#38bdf8', fontFamily: 'monospace', lineHeight: 1 }}>
+                          {slot.val}
+                        </div>
+                        <div style={{ fontSize: 10, color: '#94a3b8', textTransform: 'uppercase', marginTop: 4, fontWeight: 600 }}>
+                          {slot.label}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Live Capacity Meter (Progress Bar) */}
+                <div style={{
+                  background: 'rgba(255, 255, 255, 0.05)',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  borderRadius: 14,
+                  padding: '14px 18px',
+                  marginBottom: 28
+                }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8, fontSize: 13 }}>
+                    <span style={{ color: '#e2e8f0', fontWeight: 700 }}>
+                      Live Seats Status: <strong style={{ color: '#4ade80' }}>462 / 500 Claimed</strong>
+                    </span>
+                    <span style={{ color: '#f59e0b', fontWeight: 800 }}>92.4% Booked</span>
+                  </div>
+                  <div style={{
+                    width: '100%',
+                    height: 8,
+                    borderRadius: 9999,
+                    background: 'rgba(255, 255, 255, 0.12)',
+                    overflow: 'hidden',
+                    position: 'relative'
+                  }}>
+                    <div style={{
+                      width: '92.4%',
+                      height: '100%',
+                      background: 'linear-gradient(90deg, #10b981 0%, #3b82f6 70%, #ef4444 100%)',
+                      borderRadius: 9999
+                    }} />
+                  </div>
+                </div>
+
+                {/* Quick Info Grid */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 14, marginBottom: 32 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, color: '#e2e8f0', fontSize: 13 }}>
+                    <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(99, 102, 241, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <Calendar size={16} color="#818cf8" />
+                    </div>
+                    <div>
+                      <div style={{ fontSize: 10, color: '#94a3b8' }}>DATE</div>
+                      <div style={{ fontWeight: 700 }}>November 4, 2026</div>
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, color: '#e2e8f0', fontSize: 13 }}>
+                    <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(99, 102, 241, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <Clock size={16} color="#818cf8" />
+                    </div>
+                    <div>
+                      <div style={{ fontSize: 10, color: '#94a3b8' }}>SCHEDULE</div>
+                      <div style={{ fontWeight: 700 }}>07:00 PM IST (180 mins)</div>
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, color: '#e2e8f0', fontSize: 13 }}>
+                    <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(16, 185, 129, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <Award size={16} color="#34d399" />
+                    </div>
+                    <div>
+                      <div style={{ fontSize: 10, color: '#94a3b8' }}>CREDENTIAL</div>
+                      <div style={{ fontWeight: 700 }}>Verifiable Certificate</div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Primary Action Button */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 18, flexWrap: 'wrap' }}>
+                  <button
+                    onClick={scrollToPaymentSection}
+                    style={{
+                      background: 'linear-gradient(135deg, #ff6b4a 0%, #ea580c 100%)',
+                      color: '#ffffff',
+                      border: 'none',
+                      padding: '16px 36px',
+                      borderRadius: 12,
+                      fontSize: 16,
+                      fontWeight: 800,
+                      cursor: 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 10,
+                      boxShadow: '0 10px 30px rgba(234, 88, 12, 0.45)',
+                      transition: 'all 0.2s ease'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.transform = 'translateY(-2px) scale(1.02)';
+                      e.currentTarget.style.boxShadow = '0 14px 36px rgba(234, 88, 12, 0.6)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                      e.currentTarget.style.boxShadow = '0 10px 30px rgba(234, 88, 12, 0.45)';
+                    }}
+                  >
+                    <span>Reserve VIP Live Seat (₹499)</span>
+                    <ArrowRight size={18} />
+                  </button>
+
+                  <span style={{ fontSize: 12, color: '#94a3b8' }}>
+                    ⚡ Instant Calendar Sync & Tax Invoice
+                  </span>
                 </div>
               </div>
 
-              <p style={{ fontSize: 13, color: '#cbd5e1', lineHeight: 1.6, marginBottom: 16 }}>
-                Over 12 years of enterprise engineering experience. Former AI Lead, trained 45,000+ engineers worldwide in LLM pipelines, autonomous multi-agent coordination, and scalable cloud monetization.
-              </p>
+              {/* RIGHT PANE: Ticket Stub (Speaker & Bonus Vault) */}
+              <div style={{
+                padding: 'clamp(32px, 4vw, 44px)',
+                background: 'rgba(0, 0, 0, 0.25)',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between'
+              }}>
+                <div>
+                  {/* Stub Header */}
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+                    paddingBottom: 14,
+                    marginBottom: 20
+                  }}>
+                    <span style={{ fontSize: 11, fontWeight: 800, color: '#a5b4fc', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+                      Keynote Speaker & Mentor
+                    </span>
+                    <span style={{ fontSize: 10, color: '#64748b', fontFamily: 'monospace' }}>
+                      STUB SEC-A
+                    </span>
+                  </div>
 
-              <div style={{ borderTop: '1px solid rgba(255, 255, 255, 0.12)', paddingTop: 14 }}>
-                <span style={{ fontSize: 12, fontWeight: 700, color: '#cbd5e1', display: 'block', marginBottom: 8 }}>
-                  Free Bonuses Included (₹10,996 Value):
-                </span>
-                <ul style={{ fontSize: 12, color: '#94a3b8', listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 6 }}>
-                  <li>✓ Production Multi-Agent SaaS Starter Repo</li>
-                  <li>✓ 100+ Enterprise System Prompts & Tool Calling</li>
-                  <li>✓ Official VIP WhatsApp Mastermind & Networking</li>
-                </ul>
+                  {/* Speaker Card */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 16 }}>
+                    <div style={{ position: 'relative' }}>
+                      <img
+                        src="/assets/female_presenter_blazer.jpg"
+                        alt="Dr. Elena Vance"
+                        style={{
+                          width: 68,
+                          height: 68,
+                          borderRadius: '50%',
+                          objectFit: 'cover',
+                          border: '2.5px solid #818cf8',
+                          boxShadow: '0 4px 16px rgba(129, 140, 248, 0.4)'
+                        }}
+                      />
+                      <span style={{
+                        position: 'absolute',
+                        bottom: -2,
+                        right: -2,
+                        background: '#10b981',
+                        borderRadius: '50%',
+                        width: 18,
+                        height: 18,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        border: '2px solid #0f172a'
+                      }}>
+                        <Check size={11} color="#ffffff" />
+                      </span>
+                    </div>
+
+                    <div>
+                      <h4 style={{ fontSize: 18, fontWeight: 900, color: '#ffffff', margin: 0 }}>Dr. Elena Vance</h4>
+                      <p style={{ fontSize: 12, color: '#a5b4fc', margin: '3px 0 0' }}>Principal AI Systems Architect</p>
+                      <p style={{ fontSize: 11, color: '#facc15', margin: '4px 0 0', fontWeight: 700 }}>
+                        ★ 4.98 / 5.0 (3,800+ reviews)
+                      </p>
+                    </div>
+                  </div>
+
+                  <p style={{ fontSize: 12, color: '#94a3b8', lineHeight: 1.6, marginBottom: 22 }}>
+                    Over 12 years of enterprise engineering experience. Former AI Lead, trained 45,000+ engineers worldwide in LLM pipelines, autonomous multi-agent coordination, and scalable cloud monetization.
+                  </p>
+
+                  {/* Included Free Bonus Perks Stack */}
+                  <div style={{
+                    background: 'rgba(255, 255, 255, 0.04)',
+                    border: '1px solid rgba(255, 255, 255, 0.08)',
+                    borderRadius: 16,
+                    padding: '16px 18px',
+                    marginBottom: 20
+                  }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                      <span style={{ fontSize: 12, fontWeight: 800, color: '#facc15', display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <Gift size={14} />
+                        <span>Free Bonuses Included</span>
+                      </span>
+                      <span style={{ fontSize: 11, fontWeight: 800, color: '#4ade80' }}>
+                        ₹10,996 VALUE
+                      </span>
+                    </div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, fontSize: 12, color: '#e2e8f0' }}>
+                        <CheckCircle2 size={15} color="#4ade80" style={{ flexShrink: 0, marginTop: 1 }} />
+                        <span><strong>Production Multi-Agent SaaS Starter Repo</strong> (₹4,999 Value)</span>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, fontSize: 12, color: '#e2e8f0' }}>
+                        <CheckCircle2 size={15} color="#4ade80" style={{ flexShrink: 0, marginTop: 1 }} />
+                        <span><strong>100+ Enterprise System Prompts & Tool Calling</strong> (₹3,499 Value)</span>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, fontSize: 12, color: '#e2e8f0' }}>
+                        <CheckCircle2 size={15} color="#4ade80" style={{ flexShrink: 0, marginTop: 1 }} />
+                        <span><strong>Official VIP WhatsApp Mastermind & Networking</strong> (₹2,498 Value)</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Ticket Barcode & Authentication Footer */}
+                <div style={{
+                  borderTop: '1px solid rgba(255, 255, 255, 0.1)',
+                  paddingTop: 16,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between'
+                }}>
+                  <div>
+                    <div style={{ fontSize: 10, color: '#64748b', letterSpacing: '0.1em', fontFamily: 'monospace' }}>
+                      |||| | ||||| || |||||| | ||| ||
+                    </div>
+                    <div style={{ fontSize: 9, color: '#94a3b8', marginTop: 4, letterSpacing: '0.05em' }}>
+                      KAIRA VERIFIED EVENT • 2026
+                    </div>
+                  </div>
+
+                  <span style={{
+                    fontSize: 10,
+                    fontWeight: 800,
+                    color: '#38bdf8',
+                    background: 'rgba(56, 189, 248, 0.12)',
+                    border: '1px solid rgba(56, 189, 248, 0.3)',
+                    padding: '4px 8px',
+                    borderRadius: 6
+                  }}>
+                    PASS ID: 8821-VIP
+                  </span>
+                </div>
               </div>
+
             </div>
           </div>
         </div>

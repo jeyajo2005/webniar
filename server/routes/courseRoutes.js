@@ -13,7 +13,7 @@ const router = express.Router();
 
 router.get('/', getCourses);
 router.get('/:id', optionalUserToken, getCourseById);
-router.get('/:id/learn', verifyUserToken, getCourseClassroom);
+router.get('/:id/learn', optionalUserToken, getCourseClassroom);
 
 // Admin course management
 router.post('/', verifyAdminToken, createCourse);

@@ -13,7 +13,8 @@ import {
   Award,
   Clock,
   Lock,
-  Layers
+  Layers,
+  Mail
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { api } from '../services/api.js';
@@ -511,9 +512,30 @@ export default function CheckoutModal({
               <h4 style={{ fontSize: 22, fontWeight: 800, color: '#0f172a' }}>
                 Payment Successful! Welcome to Your Course.
               </h4>
-              <p style={{ fontSize: 14, color: '#475569', marginTop: 6, maxWidth: 440, margin: '6px auto 20px' }}>
+              <p style={{ fontSize: 14, color: '#475569', marginTop: 6, maxWidth: 440, margin: '6px auto 14px' }}>
                 Your payment has been securely verified. The full course curriculum and classroom video lessons are now unlocked!
               </p>
+
+              {/* Email Sent Confirmation Badge */}
+              <div style={{
+                background: '#ecfdf5',
+                border: '1px solid #a7f3d0',
+                borderRadius: 12,
+                padding: '12px 18px',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 10,
+                color: '#065f46',
+                fontSize: 13,
+                fontWeight: 600,
+                marginBottom: 20,
+                textAlign: 'left'
+              }}>
+                <Mail size={18} color="#059669" style={{ flexShrink: 0 }} />
+                <span>
+                  Confirmation email with direct course study link sent to <strong>{email || 'your registered email'}</strong>!
+                </span>
+              </div>
 
               {/* Receipt Details Box */}
               <div style={{

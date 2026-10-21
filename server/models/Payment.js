@@ -10,7 +10,11 @@ const PaymentSchema = new mongoose.Schema({
   currency: { type: String, default: 'INR' },
   status: { type: String, enum: ['created', 'authorized', 'captured', 'failed', 'refunded'], default: 'captured' },
   method: { type: String, default: 'UPI' },
-  invoiceNumber: { type: String }
+  invoiceNumber: { type: String },
+  customerName: { type: String },
+  customerEmail: { type: String },
+  customerPhone: { type: String },
+  itemTitle: { type: String }
 }, { timestamps: true });
 
 let MongoosePayment;

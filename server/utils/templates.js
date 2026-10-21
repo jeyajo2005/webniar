@@ -160,6 +160,109 @@ export const emailTemplates = {
       </div>
     </body>
     </html>
+  `,
+
+  courseAccess: ({
+    name,
+    courseTitle,
+    amountPaid = 499,
+    courseLink,
+    invoiceNumber,
+    invoicePdfUrl
+  }) => `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="utf-8">
+      <title>Payment Successful – Start Studying on Kaira</title>
+      <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #0f172a; color: #f8fafc; margin: 0; padding: 24px; }
+        .card { max-width: 600px; margin: 0 auto; background: #1e293b; border: 1px solid #334155; border-radius: 16px; overflow: hidden; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5); }
+        .header { background: linear-gradient(135deg, #1d4ed8 0%, #3b82f6 50%, #06b6d4 100%); padding: 36px 32px; text-align: center; }
+        .badge { display: inline-block; background: rgba(255,255,255,0.2); backdrop-filter: blur(8px); padding: 6px 16px; border-radius: 9999px; font-size: 13px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: #fff; margin-bottom: 12px; }
+        .title { color: #ffffff; font-size: 26px; font-weight: 800; margin: 0; line-height: 1.3; }
+        .body { padding: 32px; }
+        .greeting { font-size: 18px; font-weight: 600; color: #f8fafc; margin-bottom: 14px; }
+        .success-box { background: rgba(34, 197, 94, 0.12); border-left: 4px solid #22c55e; padding: 14px 16px; border-radius: 8px; margin: 20px 0; font-size: 14px; color: #bbf7d0; line-height: 1.6; }
+        .info-grid { background: #0f172a; border-radius: 12px; padding: 20px; margin: 24px 0; border: 1px solid #334155; }
+        .info-item { display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 14px; border-bottom: 1px solid #1e293b; padding-bottom: 8px; }
+        .info-item:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+        .info-label { color: #94a3b8; }
+        .info-val { color: #f8fafc; font-weight: 600; }
+        .cta-btn { display: block; background: #2563eb; color: #ffffff !important; text-decoration: none; padding: 16px 28px; border-radius: 10px; font-weight: 800; font-size: 16px; text-align: center; margin: 20px 0; box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4); }
+        .inv-btn { display: block; background: #334155; color: #e2e8f0 !important; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-weight: 600; font-size: 14px; text-align: center; margin: 12px 0; }
+        .footer { text-align: center; padding: 24px 32px; color: #64748b; font-size: 12px; border-top: 1px solid #334155; }
+      </style>
+    </head>
+    <body>
+      <div class="card">
+        <div class="header">
+          <div class="badge">Payment Successful • Course Unlocked</div>
+          <h1 class="title">${courseTitle}</h1>
+        </div>
+        <div class="body">
+          <p class="greeting">Hello ${name},</p>
+          
+          <div class="success-box">
+            <strong>🎉 Payment Received Successfully!</strong><br>
+            Your enrollment is confirmed. All video lectures, source codes, and curriculum tests are now fully unlocked for your account. You can begin studying immediately!
+          </div>
+
+          <a href="${courseLink}" class="cta-btn">
+            🚀 Start Studying Course Now &rarr;
+          </a>
+
+          <div class="info-grid">
+            <div class="info-item">
+              <span class="info-label">👤 Student:</span>
+              <span class="info-val">${name}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">📚 Enrolled Course:</span>
+              <span class="info-val">${courseTitle}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">💳 Amount Paid:</span>
+              <span class="info-val" style="color: #22c55e;">₹${amountPaid} (Verified)</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">♾️ Access Level:</span>
+              <span class="info-val" style="color: #60a5fa;">Lifetime 24/7 Access</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">🏆 Certificate:</span>
+              <span class="info-val">Verifiable ISO Certificate Included</span>
+            </div>
+            ${invoiceNumber ? `
+            <div class="info-item">
+              <span class="info-label">📄 GST Tax Invoice:</span>
+              <span class="info-val">${invoiceNumber}</span>
+            </div>
+            ` : ''}
+          </div>
+
+          <h3 style="color: #f8fafc; margin-top: 24px; font-size: 15px;">How to Access & Study Your Course:</h3>
+          <ol style="color: #cbd5e1; font-size: 13px; line-height: 1.7; padding-left: 20px;">
+            <li>Click the <strong>Start Studying Course Now</strong> button above.</li>
+            <li>Stream any video lesson at full 1080p HD, with adjustable playback speeds (0.75x – 2x).</li>
+            <li>Download project repository templates, notes, and cheat sheets in the classroom tab.</li>
+            <li>Complete the final module assessment to claim and share your verified certificate on LinkedIn.</li>
+          </ol>
+
+          ${invoicePdfUrl ? `
+          <a href="${invoicePdfUrl}" class="inv-btn">
+            📄 Download Official Tax Invoice Receipt (PDF)
+          </a>
+          ` : ''}
+        </div>
+
+        <div class="footer">
+          Kaira Learning Platform • Empowering Careers Worldwide<br>
+          Automated confirmation sent securely to ${name}.
+        </div>
+      </div>
+    </body>
+    </html>
   `
 };
 

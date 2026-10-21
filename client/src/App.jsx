@@ -32,7 +32,7 @@ export default function App() {
   });
 
   // Modal controls
-  const [showIntroVideo, setShowIntroVideo] = useState(true); // Fullscreen video hero on first open
+  const [showIntroVideo, setShowIntroVideo] = useState(false); // Disabled initial fullscreen video as requested
   const [showCheckoutModal, setShowCheckoutModal] = useState(false);
   const [checkoutCourse, setCheckoutCourse] = useState(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
@@ -54,6 +54,16 @@ export default function App() {
 
   useEffect(() => {
     fetchWebinarData();
+
+    const handleHash = () => {
+      if (window.location.hash === '#admin') {
+        setCurrentPage('admin');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    };
+    handleHash();
+    window.addEventListener('hashchange', handleHash);
+    return () => window.removeEventListener('hashchange', handleHash);
   }, []);
 
   // Action: Open Course Details
@@ -85,12 +95,16 @@ export default function App() {
 
   // Action: Course Payment Completed
   const handleCoursePaymentSuccess = (verifyResult) => {
+    const cId = verifyResult?.course?._id || checkoutCourse?._id;
+    if (cId) {
+      localStorage.setItem(`enrolled_${cId}`, 'true');
+    }
     // Keep user state updated if guest completed purchase
-    if (verifyResult.enrollment && !user) {
+    if (verifyResult?.enrollment && !user) {
       const newUser = {
         _id: verifyResult.enrollment.userId,
-        name: 'Learner',
-        email: 'student@example.com',
+        name: verifyResult.payment?.customerName || 'Learner',
+        email: verifyResult.payment?.customerEmail || 'student@example.com',
         role: 'student'
       };
       setUser(newUser);
@@ -181,6 +195,7 @@ export default function App() {
             onPaymentSuccess={handleWebinarPaymentSuccess}
             onViewCourse={handleViewCourse}
             onEnrollCourse={handleEnrollCourse}
+            onStartLearning={handleStartLearning}
             onOpenIntroVideo={() => setShowIntroVideo(true)}
             searchQuery={searchQuery}
             onSearch={setSearchQuery}
@@ -222,8 +237,13 @@ export default function App() {
           <CoursePlayer
             courseId={activeCourseId}
             user={user}
+            onEnrollCourse={handleEnrollCourse}
             onBack={() => {
-              setCurrentPage('dashboard');
+              if (selectedCourseId) {
+                setCurrentPage('course-details');
+              } else {
+                setCurrentPage('landing');
+              }
               window.scrollTo({ top: 0, behavior: 'smooth' });
             }}
             onViewCertificate={(courseId) => {
@@ -332,12 +352,14 @@ export default function App() {
               </button>
               <button
                 onClick={() => {
+                  window.location.hash = 'admin';
                   setCurrentPage('admin');
                   window.scrollTo({ top: 0, behavior: 'smooth' });
                 }}
-                style={{ background: 'none', border: 'none', color: '#475569', cursor: 'pointer' }}
+                style={{ background: 'none', border: 'none', color: '#94a3b8', fontSize: 12, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4 }}
+                title="Restricted Staff & Organizer Entrance"
               >
-                Organizer Admin Panel
+                <span>🔒 Staff & Admin Portal</span>
               </button>
             </div>
             <p>© {new Date().getFullYear()} LearnFlow Academy & WebinarFlow. All rights reserved.</p>
