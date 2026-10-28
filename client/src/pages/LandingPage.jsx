@@ -349,27 +349,68 @@ export default function LandingPage({
                   </span>
                 </div>
 
-                {/* 3 Metric Stats matching Image 1 */}
-                <div style={{
-                  display: 'flex',
-                  gap: 36,
-                  alignItems: 'center',
-                  paddingTop: 18,
-                  borderTop: '1px solid #f1f5f9'
-                }}>
-                  <div>
-                    <div style={{ fontSize: 32, fontWeight: 900, color: '#1d4ed8', lineHeight: 1 }}>500+</div>
-                    <div style={{ fontSize: 13, color: '#64748b', fontWeight: 600, marginTop: 4 }}>Courses</div>
-                  </div>
-                  <div style={{ height: 36, width: 1, background: '#e2e8f0' }} />
-                  <div>
-                    <div style={{ fontSize: 32, fontWeight: 900, color: '#1d4ed8', lineHeight: 1 }}>1M+</div>
-                    <div style={{ fontSize: 13, color: '#64748b', fontWeight: 600, marginTop: 4 }}>Students</div>
-                  </div>
-                  <div style={{ height: 36, width: 1, background: '#e2e8f0' }} />
-                  <div>
-                    <div style={{ fontSize: 32, fontWeight: 900, color: '#1d4ed8', lineHeight: 1 }}>4.9</div>
-                    <div style={{ fontSize: 13, color: '#64748b', fontWeight: 600, marginTop: 4 }}>Rating ★</div>
+                {/* Metric Stats Infinite Right-to-Left Marquee */}
+                <div
+                  className="stats-marquee-container"
+                  style={{
+                    overflow: 'hidden',
+                    width: '100%',
+                    maxWidth: 480,
+                    paddingTop: 18,
+                    borderTop: '1px solid #f1f5f9',
+                    position: 'relative',
+                    maskImage: 'linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)',
+                    WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)'
+                  }}
+                >
+                  <div className="stats-marquee-track">
+                    {/* Set 1 */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 32, flexShrink: 0 }}>
+                      <div>
+                        <div style={{ fontSize: 30, fontWeight: 900, color: '#1d4ed8', lineHeight: 1 }}>500+</div>
+                        <div style={{ fontSize: 13, color: '#64748b', fontWeight: 600, marginTop: 4, whiteSpace: 'nowrap' }}>Courses</div>
+                      </div>
+                      <div style={{ height: 32, width: 1, background: '#e2e8f0', flexShrink: 0 }} />
+                      <div>
+                        <div style={{ fontSize: 30, fontWeight: 900, color: '#1d4ed8', lineHeight: 1 }}>1M+</div>
+                        <div style={{ fontSize: 13, color: '#64748b', fontWeight: 600, marginTop: 4, whiteSpace: 'nowrap' }}>Students</div>
+                      </div>
+                      <div style={{ height: 32, width: 1, background: '#e2e8f0', flexShrink: 0 }} />
+                      <div>
+                        <div style={{ fontSize: 30, fontWeight: 900, color: '#1d4ed8', lineHeight: 1 }}>4.9 ★</div>
+                        <div style={{ fontSize: 13, color: '#64748b', fontWeight: 600, marginTop: 4, whiteSpace: 'nowrap' }}>Rating</div>
+                      </div>
+                      <div style={{ height: 32, width: 1, background: '#e2e8f0', flexShrink: 0 }} />
+                      <div>
+                        <div style={{ fontSize: 30, fontWeight: 900, color: '#1d4ed8', lineHeight: 1 }}>98%</div>
+                        <div style={{ fontSize: 13, color: '#64748b', fontWeight: 600, marginTop: 4, whiteSpace: 'nowrap' }}>Placement</div>
+                      </div>
+                      <div style={{ height: 32, width: 1, background: '#e2e8f0', flexShrink: 0 }} />
+                    </div>
+
+                    {/* Set 2 (Identical for seamless infinite continuous scroll) */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 32, flexShrink: 0 }}>
+                      <div>
+                        <div style={{ fontSize: 30, fontWeight: 900, color: '#1d4ed8', lineHeight: 1 }}>500+</div>
+                        <div style={{ fontSize: 13, color: '#64748b', fontWeight: 600, marginTop: 4, whiteSpace: 'nowrap' }}>Courses</div>
+                      </div>
+                      <div style={{ height: 32, width: 1, background: '#e2e8f0', flexShrink: 0 }} />
+                      <div>
+                        <div style={{ fontSize: 30, fontWeight: 900, color: '#1d4ed8', lineHeight: 1 }}>1M+</div>
+                        <div style={{ fontSize: 13, color: '#64748b', fontWeight: 600, marginTop: 4, whiteSpace: 'nowrap' }}>Students</div>
+                      </div>
+                      <div style={{ height: 32, width: 1, background: '#e2e8f0', flexShrink: 0 }} />
+                      <div>
+                        <div style={{ fontSize: 30, fontWeight: 900, color: '#1d4ed8', lineHeight: 1 }}>4.9 ★</div>
+                        <div style={{ fontSize: 13, color: '#64748b', fontWeight: 600, marginTop: 4, whiteSpace: 'nowrap' }}>Rating</div>
+                      </div>
+                      <div style={{ height: 32, width: 1, background: '#e2e8f0', flexShrink: 0 }} />
+                      <div>
+                        <div style={{ fontSize: 30, fontWeight: 900, color: '#1d4ed8', lineHeight: 1 }}>98%</div>
+                        <div style={{ fontSize: 13, color: '#64748b', fontWeight: 600, marginTop: 4, whiteSpace: 'nowrap' }}>Placement</div>
+                      </div>
+                      <div style={{ height: 32, width: 1, background: '#e2e8f0', flexShrink: 0 }} />
+                    </div>
                   </div>
                 </div>
               </div>

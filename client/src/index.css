@@ -738,3 +738,30 @@ a {
   }
 }
 
+/* ==========================================================================
+   Continuous Right-to-Left Infinite Marquee Animation
+   ========================================================================== */
+
+@keyframes statsMarquee {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.stats-marquee-track {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  width: max-content;
+  animation: statsMarquee 15s linear infinite;
+  will-change: transform;
+}
+
+.stats-marquee-container:hover .stats-marquee-track {
+  animation-play-state: paused;
+}
+
+
