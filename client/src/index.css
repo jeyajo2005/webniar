@@ -703,6 +703,11 @@ a {
   }
 }
 
+html, body {
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
 @media (max-width: 860px) {
   .desktop-nav {
     display: none !important;
@@ -728,13 +733,94 @@ a {
   /* Make hero grid stack vertically on mobile */
   .hero-grid {
     grid-template-columns: 1fr !important;
-    gap: 36px !important;
+    gap: 32px !important;
   }
 
   /* Reduce padding on mobile devices for card */
   .container {
     padding-left: 16px !important;
     padding-right: 16px !important;
+  }
+
+  .courses-grid-responsive {
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)) !important;
+    gap: 20px !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .hero-main-card {
+    padding: 24px 16px !important;
+    border-radius: 20px !important;
+  }
+
+  .hero-headline {
+    font-size: 27px !important;
+    line-height: 1.2 !important;
+  }
+
+  .hero-btn-row {
+    flex-direction: column !important;
+    width: 100% !important;
+    gap: 12px !important;
+  }
+
+  .hero-btn-row button {
+    width: 100% !important;
+    justify-content: center !important;
+    padding: 14px 20px !important;
+  }
+
+  .hero-students-col {
+    min-height: auto !important;
+    padding: 10px 0 !important;
+  }
+
+  .hero-partners-wrap {
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
+    gap: 14px !important;
+  }
+
+  .hero-partners-wrap > div {
+    justify-content: center !important;
+    gap: 12px 20px !important;
+  }
+
+  .stats-marquee-container {
+    max-width: 100% !important;
+  }
+
+  .courses-grid-responsive {
+    grid-template-columns: 1fr !important;
+  }
+
+  .registration-form-body {
+    padding: 22px 16px !important;
+  }
+
+  .registration-form-header {
+    padding: 22px 16px !important;
+  }
+
+  .dashboard-metrics-row {
+    width: 100% !important;
+    gap: 8px !important;
+  }
+
+  .dashboard-metrics-row > div {
+    flex: 1 1 calc(33.333% - 6px) !important;
+    min-width: 80px !important;
+    padding: 10px 8px !important;
+  }
+
+  .newsletter-form-responsive {
+    flex-direction: column !important;
+  }
+
+  .newsletter-form-responsive button {
+    width: 100% !important;
   }
 }
 

@@ -113,10 +113,10 @@ export default function StudentDashboard({
     <div style={{ background: '#f8fafc', minHeight: '100vh', padding: '40px 0 80px' }}>
       <div className="container" style={{ maxWidth: 1240, margin: '0 auto', padding: '0 24px' }}>
         {/* 1. Student Header Card */}
-        <div style={{
+        <div className="hero-main-card" style={{
           background: 'linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%)',
           borderRadius: 20,
-          padding: 32,
+          padding: 'clamp(20px, 3.5vw, 32px) clamp(16px, 3.5vw, 32px)',
           color: '#ffffff',
           boxShadow: '0 20px 40px -15px rgba(15, 23, 42, 0.25)',
           marginBottom: 32,
@@ -124,17 +124,17 @@ export default function StudentDashboard({
           justifyContent: 'space-between',
           alignItems: 'center',
           flexWrap: 'wrap',
-          gap: 24
+          gap: 20
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
             <img
               src={user?.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80'}
               alt={user?.name}
-              style={{ width: 80, height: 80, borderRadius: '50%', objectFit: 'cover', border: '3px solid #6366f1' }}
+              style={{ width: 68, height: 68, borderRadius: '50%', objectFit: 'cover', border: '3px solid #6366f1' }}
             />
             <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <h1 style={{ fontSize: 24, fontWeight: 800 }}>Welcome, {user?.name || 'Learner'}!</h1>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                <h1 style={{ fontSize: 'clamp(20px, 4vw, 24px)', fontWeight: 800 }}>Welcome, {user?.name || 'Learner'}!</h1>
                 <span style={{ background: 'rgba(99, 102, 241, 0.25)', color: '#c7d2fe', fontSize: 11, fontWeight: 700, padding: '3px 8px', borderRadius: 6 }}>
                   Verified Student
                 </span>
@@ -146,17 +146,17 @@ export default function StudentDashboard({
           </div>
 
           {/* Quick Metrics */}
-          <div style={{ display: 'flex', gap: 24 }}>
-            <div style={{ background: 'rgba(255, 255, 255, 0.08)', padding: '12px 20px', borderRadius: 12, textAlign: 'center' }}>
-              <span style={{ fontSize: 22, fontWeight: 800, color: '#ffffff', display: 'block' }}>{enrollments.length}</span>
+          <div className="dashboard-metrics-row" style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+            <div style={{ background: 'rgba(255, 255, 255, 0.08)', padding: '12px 18px', borderRadius: 12, textAlign: 'center', flex: '1 1 auto' }}>
+              <span style={{ fontSize: 20, fontWeight: 800, color: '#ffffff', display: 'block' }}>{enrollments.length}</span>
               <span style={{ fontSize: 11, color: '#94a3b8', textTransform: 'uppercase', fontWeight: 600 }}>Enrolled</span>
             </div>
-            <div style={{ background: 'rgba(255, 255, 255, 0.08)', padding: '12px 20px', borderRadius: 12, textAlign: 'center' }}>
-              <span style={{ fontSize: 22, fontWeight: 800, color: '#38bdf8', display: 'block' }}>{inProgressCount}</span>
+            <div style={{ background: 'rgba(255, 255, 255, 0.08)', padding: '12px 18px', borderRadius: 12, textAlign: 'center', flex: '1 1 auto' }}>
+              <span style={{ fontSize: 20, fontWeight: 800, color: '#38bdf8', display: 'block' }}>{inProgressCount}</span>
               <span style={{ fontSize: 11, color: '#94a3b8', textTransform: 'uppercase', fontWeight: 600 }}>In Progress</span>
             </div>
-            <div style={{ background: 'rgba(255, 255, 255, 0.08)', padding: '12px 20px', borderRadius: 12, textAlign: 'center' }}>
-              <span style={{ fontSize: 22, fontWeight: 800, color: '#4ade80', display: 'block' }}>{completedCount}</span>
+            <div style={{ background: 'rgba(255, 255, 255, 0.08)', padding: '12px 18px', borderRadius: 12, textAlign: 'center', flex: '1 1 auto' }}>
+              <span style={{ fontSize: 20, fontWeight: 800, color: '#4ade80', display: 'block' }}>{completedCount}</span>
               <span style={{ fontSize: 11, color: '#94a3b8', textTransform: 'uppercase', fontWeight: 600 }}>Certificates</span>
             </div>
           </div>
@@ -265,7 +265,7 @@ export default function StudentDashboard({
                 </button>
               </div>
             ) : (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 24 }}>
+              <div className="courses-grid-responsive" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 300px), 1fr))', gap: 24 }}>
                 {enrollments.map((enr) => {
                   const percent = enr.progress?.percent || 0;
                   const course = enr.course || {};
@@ -483,7 +483,7 @@ export default function StudentDashboard({
                 </button>
               </div>
             ) : (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(360px, 1fr))', gap: 24 }}>
+              <div className="courses-grid-responsive" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 300px), 1fr))', gap: 24 }}>
                 {enrollments.filter(e => e.progress?.percent === 100).map((enr) => (
                   <div
                     key={enr._id}

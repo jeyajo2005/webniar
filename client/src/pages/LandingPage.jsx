@@ -198,10 +198,10 @@ export default function LandingPage({
 
         <div style={{ maxWidth: 1220, margin: '0 auto', position: 'relative', zIndex: 10 }}>
           {/* Main White Card matching Image 1 with Ultra-Premium Aesthetics */}
-          <div style={{
+          <div className="hero-main-card" style={{
             background: '#ffffff',
             borderRadius: 28,
-            padding: 'clamp(36px, 4.5vw, 56px) clamp(24px, 4.5vw, 60px)',
+            padding: 'clamp(24px, 4vw, 56px) clamp(16px, 4vw, 60px)',
             boxShadow: '0 35px 80px -15px rgba(15, 23, 42, 0.38), 0 0 0 1px rgba(255, 255, 255, 0.5)',
             position: 'relative',
             overflow: 'hidden'
@@ -216,7 +216,7 @@ export default function LandingPage({
               {/* Left Column: Form & Content */}
               <div>
                 {/* Live Pill Badge */}
-                <div style={{
+                <div className="hero-badge" style={{
                   display: 'inline-flex',
                   alignItems: 'center',
                   gap: 8,
@@ -224,7 +224,9 @@ export default function LandingPage({
                   border: '1px solid #bfdbfe',
                   borderRadius: 9999,
                   padding: '6px 14px',
-                  marginBottom: 16
+                  marginBottom: 16,
+                  maxWidth: '100%',
+                  flexWrap: 'wrap'
                 }}>
                   <span style={{
                     width: 7,
@@ -240,11 +242,11 @@ export default function LandingPage({
                 </div>
 
                 {/* Main Headline */}
-                <h1 style={{
-                  fontSize: 'clamp(36px, 4.5vw, 56px)',
+                <h1 className="hero-headline" style={{
+                  fontSize: 'clamp(28px, 5.5vw, 54px)',
                   fontWeight: 900,
                   color: '#1e3a8a',
-                  lineHeight: 1.12,
+                  lineHeight: 1.15,
                   letterSpacing: '-0.035em',
                   marginBottom: 16
                 }}>
@@ -270,7 +272,7 @@ export default function LandingPage({
                 </p>
 
                 {/* Clean Modern Action Row */}
-                <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', marginBottom: 24, marginTop: 8 }}>
+                <div className="hero-btn-row" style={{ display: 'flex', gap: 14, flexWrap: 'wrap', marginBottom: 24, marginTop: 8 }}>
                   <button
                     onClick={() => { if (onNavigateToCourses) onNavigateToCourses(); else scrollToCourses(); }}
                     style={{
@@ -416,7 +418,7 @@ export default function LandingPage({
               </div>
 
               {/* Right Column: Cheerful Students */}
-              <div style={{ position: 'relative', display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 450 }}>
+              <div className="hero-students-col" style={{ position: 'relative', display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 450 }}>
                 {/* Cheerful Students */}
                 <img
                   src="/assets/kaira_hero_students.jpg"
@@ -437,7 +439,7 @@ export default function LandingPage({
             </div>
 
             {/* Bottom Enterprise Partners Strip */}
-            <div style={{
+            <div className="hero-partners-wrap" style={{
               marginTop: 40,
               paddingTop: 24,
               borderTop: '1px solid #f1f5f9',
@@ -445,7 +447,7 @@ export default function LandingPage({
               alignItems: 'center',
               justifyContent: 'space-between',
               flexWrap: 'wrap',
-              gap: 20
+              gap: 16
             }}>
               <span style={{ fontSize: 12, fontWeight: 700, textTransform: 'uppercase', color: '#94a3b8', letterSpacing: '0.06em' }}>
                 Accredited Curriculum & Career Partners:
@@ -559,9 +561,9 @@ export default function LandingPage({
               </button>
             </div>
           ) : (
-            <div style={{
+            <div className="courses-grid-responsive" style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 310px), 1fr))',
               gap: 28
             }}>
               {courses.map((course) => {
@@ -1513,7 +1515,7 @@ export default function LandingPage({
             Subscribe to our weekly dispatch of enterprise tutorials, architectural blueprints, and course discounts.
           </p>
 
-          <form onSubmit={handleSubscribe} style={{ display: 'flex', gap: 10, maxWidth: 480, margin: '0 auto' }}>
+          <form className="newsletter-form-responsive" onSubmit={handleSubscribe} style={{ display: 'flex', gap: 10, maxWidth: 480, margin: '0 auto' }}>
             <input
               type="email"
               required

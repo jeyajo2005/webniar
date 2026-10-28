@@ -132,7 +132,7 @@ export default function WebinarDetails({ webinar, onRegisterClick }) {
         marginBottom: 64,
         boxShadow: 'var(--shadow-card)'
       }}>
-        <div style={{
+        <div className="hero-grid" style={{
           display: 'grid',
           gridTemplateColumns: 'minmax(280px, 340px) 1fr',
           gap: 40,

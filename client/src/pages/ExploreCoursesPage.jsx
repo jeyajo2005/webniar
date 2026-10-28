@@ -328,10 +328,9 @@ export default function ExploreCoursesPage({
             </button>
           </div>
         ) : (
-          /* Cards Grid: 3 columns desktop, 2 tablet, 1 mobile */
-          <div style={{
+          <div className="courses-grid-responsive" style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(360px, 1fr))',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 310px), 1fr))',
             gap: 28
           }}>
             {filteredCourses.map((course) => {

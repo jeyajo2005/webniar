@@ -267,7 +267,7 @@ export default function RegistrationForm({ webinar, onRegisterSuccess, onPayment
       overflow: 'hidden'
     }}>
       {/* Form Header */}
-      <div style={{
+      <div className="registration-form-header" style={{
         background: 'linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%)',
         color: '#ffffff',
         padding: '30px 32px',
@@ -300,7 +300,7 @@ export default function RegistrationForm({ webinar, onRegisterSuccess, onPayment
       </div>
 
       {/* Form Fields */}
-      <div style={{ padding: '36px 32px' }}>
+      <div className="registration-form-body" style={{ padding: '36px 32px' }}>
         
         {errorMsg && (
           <div style={{

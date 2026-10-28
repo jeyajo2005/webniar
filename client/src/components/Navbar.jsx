@@ -166,7 +166,7 @@ export default function Navbar({
           {/* 3. Right: User Profile or Login/Sign Up + Mobile Menu Toggle */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             {user ? (
-              <div style={{ position: 'relative' }}>
+              <div className="desktop-auth-btn" style={{ position: 'relative' }}>
                 <button
                   onClick={() => setShowUserMenu(!showUserMenu)}
                   style={{

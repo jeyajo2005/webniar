@@ -54,7 +54,7 @@ export default function CheckoutPage({
           <ArrowLeft size={16} /> Back to Webinar Overview
         </button>
 
-        <div style={{
+        <div className="hero-grid" style={{
           display: 'grid',
           gridTemplateColumns: '1.2fr 0.8fr',
           gap: 32,
