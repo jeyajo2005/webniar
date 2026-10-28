@@ -288,6 +288,10 @@ export default function App() {
               }, 100);
             }}
             onLogout={handleLogout}
+            onOpenAuth={(mode) => {
+              setAuthMode(mode || 'login');
+              setShowAuthModal(true);
+            }}
           />
         )}
 

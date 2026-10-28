@@ -1,5 +1,26 @@
 import mongoose from 'mongoose';
 import { memoryStore } from './store.js';
+import { ALL_COURSES } from '../data/allCoursesData.js';
+
+const ensureAllCoursesSeeded = () => {
+  if (!memoryStore.courses) memoryStore.courses = [];
+  if (Array.isArray(ALL_COURSES)) {
+    ALL_COURSES.forEach(catCourse => {
+      const exists = memoryStore.courses.some(c => c._id === catCourse._id);
+      if (!exists) {
+        memoryStore.courses.push({
+          ...catCourse,
+          slug: catCourse.slug || catCourse._id.replace('course_', '').replace(/_/g, '-'),
+          currency: 'INR',
+          published: true,
+          certificateAvailable: true,
+          modules: []
+        });
+      }
+    });
+  }
+};
+ensureAllCoursesSeeded();
 
 const LessonSchema = new mongoose.Schema({
   _id: { type: String, default: () => 'les_' + Date.now() + Math.random().toString(36).substring(2, 6) },
@@ -84,6 +105,7 @@ const matchesQuery = (doc, query) => {
 
 export const CourseModel = {
   find: async (query = {}) => {
+    ensureAllCoursesSeeded();
     if (mongoose.connection.readyState === 1) {
       const mongoQuery = {};
       if (query.category) mongoQuery.category = query.category;
@@ -109,6 +131,7 @@ export const CourseModel = {
     return (memoryStore.courses || []).filter(c => matchesQuery(c, query));
   },
   findOne: async (query = {}) => {
+    ensureAllCoursesSeeded();
     if (mongoose.connection.readyState === 1) {
       const doc = await MongooseCourse.findOne(query);
       if (doc) return doc;
@@ -116,6 +139,7 @@ export const CourseModel = {
     return (memoryStore.courses || []).find(c => matchesQuery(c, query)) || null;
   },
   findById: async (id) => {
+    ensureAllCoursesSeeded();
     if (mongoose.connection.readyState === 1) {
       const doc = await MongooseCourse.findOne({ $or: [{ _id: id }, { slug: id }] });
       if (doc) return doc;

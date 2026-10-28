@@ -374,24 +374,9 @@ export default function LandingPage({
                 </div>
               </div>
 
-              {/* Right Column: Warm Yellow Backdrop + Cheerful Students + Depth Badges */}
+              {/* Right Column: Cheerful Students */}
               <div style={{ position: 'relative', display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 450 }}>
-
-                {/* Organic Amber/Yellow Backdrop Shape matching Image 1 */}
-                <div style={{
-                  position: 'absolute',
-                  width: '94%',
-                  height: '92%',
-                  right: '0%',
-                  top: '4%',
-                  borderRadius: '52% 48% 62% 38% / 46% 52% 48% 54%',
-                  background: 'linear-gradient(135deg, #f59e0b 0%, #fbbf24 60%, #fde047 100%)',
-                  zIndex: 1,
-                  transform: 'rotate(-4deg)',
-                  boxShadow: '0 20px 40px rgba(245, 158, 11, 0.25)'
-                }} />
-
-                {/* Cheerful Students Cutout */}
+                {/* Cheerful Students */}
                 <img
                   src="/assets/kaira_hero_students.jpg"
                   alt="Kaira Students"
@@ -401,8 +386,9 @@ export default function LandingPage({
                     position: 'relative',
                     zIndex: 2,
                     display: 'block',
+                    borderRadius: 20,
                     objectFit: 'contain',
-                    filter: 'drop-shadow(0 15px 25px rgba(0,0,0,0.12))'
+                    boxShadow: '0 15px 35px -5px rgba(15, 23, 42, 0.08)'
                   }}
                 />
               </div>

@@ -5,7 +5,7 @@ export const API_BASE = (typeof import.meta !== 'undefined' && import.meta.env &
 const getAuthHeaders = (token) => {
   const headers = { 'Content-Type': 'application/json' };
   const activeToken = token || localStorage.getItem('token');
-  if (activeToken) {
+  if (activeToken && activeToken !== 'null' && activeToken !== 'undefined') {
     headers['Authorization'] = `Bearer ${activeToken}`;
   }
   return headers;
@@ -295,9 +295,13 @@ export const api = {
 
   // ================= ENROLLMENTS & DASHBOARD API =================
   async getMyEnrollments(token) {
+    const activeToken = token || localStorage.getItem('token');
+    if (!activeToken || activeToken === 'null' || activeToken === 'undefined') {
+      return { success: false, enrollments: [], message: 'Not authenticated' };
+    }
     try {
       const res = await fetch(`${API_BASE}/enrollments/my`, {
-        headers: getAuthHeaders(token)
+        headers: getAuthHeaders(activeToken)
       });
       if (!res.ok) throw new Error('Enrollments fetch failed');
       return await res.json();

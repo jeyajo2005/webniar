@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { api } from '../services/api.js';
+import { ALL_COURSES } from '../data/allCoursesData.js';
 
 export default function CoursePlayer({ 
   courseId, 
@@ -104,22 +105,25 @@ export default function CoursePlayer({
           setCurrentLesson(initialLesson || updatedCourse.modules?.[0]?.lessons?.[0]);
           setCurrentModuleIdx(foundMIdx);
           setCurrentLessonIdx(foundLIdx);
+        } else {
+          throw new Error(res?.message || 'Classroom fetch returned unsuccessful');
         }
       } catch (err) {
         console.warn('Classroom service fallback to 10-lesson mode:', err);
         const localEnrolled = localStorage.getItem(`enrolled_${courseId}`) === 'true';
+        const catCourse = ALL_COURSES.find(c => c._id === courseId);
         
-        // Full 10-Lesson standard syllabus
+        // Full 10-Lesson standard syllabus matching course
         const fallbackCourse = {
           _id: courseId || 'course_ai_agents',
-          title: 'Full-Stack AI & Autonomous Agent Architecture',
-          instructor: { name: 'Dr. Elena Vance' },
-          price: 499,
-          originalPrice: 2999,
+          title: catCourse?.title || 'Comprehensive Professional Masterclass',
+          instructor: catCourse?.instructor || { name: 'Dr. Elena Vance' },
+          price: catCourse?.price || 499,
+          originalPrice: catCourse?.originalPrice || 2999,
           modules: [
             {
               _id: 'mod_1',
-              title: 'Module 1: Foundations & Swarm Architecture (3 Lessons)',
+              title: `Module 1: Foundations & Architecture (3 Lessons)`,
               lessons: [
                 {
                   _id: 'les_1',
@@ -376,6 +380,17 @@ export default function CoursePlayer({
     );
   }
 
+  if (!course) {
+    return (
+      <div style={{ minHeight: '100vh', background: '#0f172a', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ width: 48, height: 48, border: '4px solid #334155', borderTopColor: '#6366f1', borderRadius: '50%', animation: 'spin 1s linear infinite', margin: '0 auto 16px' }} />
+          <p style={{ fontSize: 14, color: '#94a3b8' }}>Loading classroom curriculum...</p>
+        </div>
+      </div>
+    );
+  }
+
   const isCurrentCompleted = currentLesson ? completedLessonIds.includes(currentLesson._id) : false;
 
   return (
@@ -415,10 +430,10 @@ export default function CoursePlayer({
 
           <div>
             <h2 style={{ fontSize: 15, fontWeight: 700, color: '#ffffff', lineHeight: 1.2 }}>
-              {course.title}
+              {course?.title || 'Course Classroom'}
             </h2>
             <p style={{ fontSize: 11, color: '#94a3b8' }}>
-              Instructor: {course.instructor?.name || 'Dr. Elena Vance'}
+              Instructor: {course?.instructor?.name || 'Dr. Elena Vance'}
             </p>
           </div>
         </div>

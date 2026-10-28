@@ -21,7 +21,8 @@ export default function StudentDashboard({
   user, 
   onContinueCourse, 
   onExploreCourses, 
-  onLogout 
+  onLogout,
+  onOpenAuth
 }) {
   const [activeTab, setActiveTab] = useState('courses'); // 'courses' | 'payments' | 'certificates' | 'profile'
   const [enrollments, setEnrollments] = useState([]);
@@ -36,9 +37,13 @@ export default function StudentDashboard({
 
   useEffect(() => {
     const fetchEnrollments = async () => {
+      const token = localStorage.getItem('token');
+      if (!token || token === 'null' || token === 'undefined') {
+        setLoading(false);
+        return;
+      }
       setLoading(true);
       try {
-        const token = localStorage.getItem('token');
         const res = await api.getMyEnrollments(token);
         if (res.success) {
           setEnrollments(res.enrollments || []);
@@ -51,7 +56,39 @@ export default function StudentDashboard({
     };
 
     fetchEnrollments();
-  }, []);
+  }, [user]);
+
+  if (!user && !localStorage.getItem('token')) {
+    return (
+      <div style={{ background: '#f8fafc', minHeight: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px 20px' }}>
+        <div style={{ background: '#ffffff', borderRadius: 20, padding: '48px 36px', maxWidth: 460, textAlign: 'center', boxShadow: '0 20px 40px -15px rgba(15, 23, 42, 0.08)', border: '1px solid #e2e8f0' }}>
+          <div style={{ width: 64, height: 64, borderRadius: '50%', background: '#eff6ff', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
+            <User size={32} color="#1d4ed8" />
+          </div>
+          <h2 style={{ fontSize: 24, fontWeight: 800, color: '#0f172a', marginBottom: 10 }}>Sign in to View Dashboard</h2>
+          <p style={{ color: '#64748b', fontSize: 15, marginBottom: 24, lineHeight: 1.5 }}>
+            Access your enrolled courses, video lectures, certificates, and invoices.
+          </p>
+          <button
+            onClick={() => { if (onOpenAuth) onOpenAuth('login'); }}
+            style={{
+              padding: '14px 32px',
+              borderRadius: 12,
+              background: 'linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%)',
+              color: '#ffffff',
+              fontSize: 15,
+              fontWeight: 700,
+              border: 'none',
+              cursor: 'pointer',
+              boxShadow: '0 10px 25px -4px rgba(37, 99, 235, 0.35)'
+            }}
+          >
+            Log In / Sign Up
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   const handleUpdateProfile = async (e) => {
     e.preventDefault();

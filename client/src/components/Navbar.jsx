@@ -1,19 +1,15 @@
-import { FaReact } from 'react-icons/fa';
 import React, { useState } from 'react';
 import { 
   Search, 
   ChevronDown, 
   LayoutDashboard, 
-  Sparkles, 
-  BookOpen,
-  Video,
-  User,
-  LogOut,
-  Settings,
-  Tv,
-  Award,
-  Menu,
-  X
+  BookOpen, 
+  User, 
+  LogOut, 
+  Menu, 
+  X, 
+  Home, 
+  Flame 
 } from 'lucide-react';
 
 export default function Navbar({ 
@@ -45,16 +41,16 @@ export default function Navbar({
       zIndex: 100,
       boxShadow: '0 2px 10px rgba(15, 23, 42, 0.04)'
     }}>
-      <div className="container" style={{ maxWidth: 1280, padding: '0 24px', margin: '0 auto' }}>
+      <div className="container" style={{ maxWidth: 1280, padding: '0 20px', margin: '0 auto' }}>
         <div style={{
           height: 74,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          gap: 20
+          gap: 16
         }}>
-          {/* 1. Left: Brand Heading "Kaira" & Navigation */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
+          {/* 1. Left: Brand Heading "Kaira" & Desktop Nav */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
             <button
               onClick={() => onNavigate('landing')}
               style={{
@@ -79,7 +75,7 @@ export default function Navbar({
               </span>
             </button>
 
-            {/* Desktop Navigation Links: Home and Courses */}
+            {/* Desktop Navigation Links */}
             <nav style={{ display: 'flex', alignItems: 'center', gap: 12 }} className="desktop-nav">
               <button
                 onClick={() => onNavigate('landing')}
@@ -124,8 +120,8 @@ export default function Navbar({
             </nav>
           </div>
 
-          {/* 2. Center: Prominent Large Course Search Bar */}
-          <div style={{ flex: 1, maxWidth: 680, margin: '0 20px' }} className="nav-search-bar">
+          {/* 2. Center: Prominent Large Course Search Bar (Desktop) */}
+          <div style={{ flex: 1, maxWidth: 680, margin: '0 16px' }} className="nav-search-bar">
             <form onSubmit={handleSearchSubmit} style={{ position: 'relative' }}>
               <Search
                 size={18}
@@ -167,8 +163,8 @@ export default function Navbar({
             </form>
           </div>
 
-          {/* 3. Right: User Profile or Login/Sign Up */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          {/* 3. Right: User Profile or Login/Sign Up + Mobile Menu Toggle */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             {user ? (
               <div style={{ position: 'relative' }}>
                 <button
@@ -176,23 +172,28 @@ export default function Navbar({
                   style={{
                     display: 'flex',
                     alignItems: 'center',
-                    gap: 10,
+                    gap: 8,
                     background: '#f8fafc',
-                    border: '1px solid #e2e8f0',
+                    border: '1.5px solid #e2e8f0',
                     borderRadius: 9999,
-                    padding: '6px 14px 6px 6px',
-                    cursor: 'pointer'
+                    padding: '8px 16px',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.borderColor = '#cbd5e1';
+                    e.currentTarget.style.background = '#f1f5f9';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.borderColor = '#e2e8f0';
+                    e.currentTarget.style.background = '#f8fafc';
                   }}
                 >
-                  <img
-                    src={user.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=100&q=80'}
-                    alt={user.name}
-                    style={{ width: 30, height: 30, borderRadius: '50%', objectFit: 'cover' }}
-                  />
-                  <span style={{ fontSize: 13, fontWeight: 700, color: '#1e293b' }}>
+                  <User size={16} color="#1d4ed8" />
+                  <span style={{ fontSize: 14, fontWeight: 700, color: '#1e293b' }} className="desktop-user-name">
                     {user.name.split(' ')[0]}
                   </span>
-                  <ChevronDown size={14} color="#64748b" />
+                  <ChevronDown size={14} color="#64748b" className="desktop-user-chevron" />
                 </button>
 
                 {showUserMenu && (
@@ -266,7 +267,7 @@ export default function Navbar({
                 )}
               </div>
             ) : (
-              <div style={{ display: 'flex', alignItems: 'center' }}>
+              <div className="desktop-auth-btn" style={{ display: 'flex', alignItems: 'center' }}>
                 <button
                   onClick={() => onOpenAuth('login')}
                   style={{
@@ -297,9 +298,271 @@ export default function Navbar({
                 </button>
               </div>
             )}
+
+            {/* Mobile Menu Hamburger Toggle */}
+            <button
+              className="mobile-menu-btn"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              aria-label={mobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
+              style={{
+                width: 42,
+                height: 42,
+                borderRadius: 10,
+                border: '1.5px solid #cbd5e1',
+                background: mobileMenuOpen ? '#eff6ff' : '#f8fafc',
+                cursor: 'pointer',
+                color: mobileMenuOpen ? '#1d4ed8' : '#1e293b',
+                alignItems: 'center',
+                justifyContent: 'center',
+                transition: 'all 0.2s ease',
+                padding: 0
+              }}
+            >
+              {mobileMenuOpen ? <X size={22} color="#1d4ed8" /> : <Menu size={22} color="#1e293b" />}
+            </button>
           </div>
         </div>
       </div>
+
+      {/* Mobile Drawer Navigation Menu */}
+      {mobileMenuOpen && (
+        <div
+          className="mobile-menu-drawer"
+          style={{
+            background: '#ffffff',
+            borderTop: '1px solid #f1f5f9',
+            boxShadow: '0 20px 30px -10px rgba(15, 23, 42, 0.12)',
+            padding: '16px 20px 24px',
+            animation: 'fadeInDown 0.2s ease-out'
+          }}
+        >
+          {/* Mobile Search Bar */}
+          <form
+            onSubmit={(e) => {
+              handleSearchSubmit(e);
+              setMobileMenuOpen(false);
+            }}
+            style={{ marginBottom: 16 }}
+          >
+            <div style={{ position: 'relative' }}>
+              <Search
+                size={18}
+                color="#64748b"
+                style={{ position: 'absolute', left: 14, top: 13 }}
+              />
+              <input
+                type="text"
+                placeholder="Search 25+ courses, skills..."
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  if (onSearch) onSearch(e.target.value);
+                }}
+                style={{
+                  width: '100%',
+                  height: 44,
+                  padding: '0 16px 0 42px',
+                  borderRadius: 12,
+                  border: '1.5px solid #cbd5e1',
+                  background: '#f8fafc',
+                  fontSize: 14,
+                  color: '#0f172a',
+                  outline: 'none',
+                  boxSizing: 'border-box'
+                }}
+              />
+            </div>
+          </form>
+
+          {/* Navigation Links */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            <button
+              onClick={() => {
+                onNavigate('landing');
+                setMobileMenuOpen(false);
+              }}
+              style={{
+                width: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 12,
+                padding: '12px 14px',
+                borderRadius: 10,
+                background: currentPage === 'landing' ? '#eff6ff' : 'transparent',
+                border: 'none',
+                color: currentPage === 'landing' ? '#1d4ed8' : '#334155',
+                fontSize: 15,
+                fontWeight: currentPage === 'landing' ? 700 : 600,
+                cursor: 'pointer',
+                textAlign: 'left'
+              }}
+            >
+              <Home size={18} color={currentPage === 'landing' ? '#1d4ed8' : '#64748b'} />
+              <span>Home</span>
+            </button>
+
+            <button
+              onClick={() => {
+                onNavigate('courses');
+                setMobileMenuOpen(false);
+              }}
+              style={{
+                width: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 12,
+                padding: '12px 14px',
+                borderRadius: 10,
+                background: currentPage === 'courses' ? '#eff6ff' : 'transparent',
+                border: 'none',
+                color: currentPage === 'courses' ? '#1d4ed8' : '#334155',
+                fontSize: 15,
+                fontWeight: currentPage === 'courses' ? 700 : 600,
+                cursor: 'pointer',
+                textAlign: 'left'
+              }}
+            >
+              <BookOpen size={18} color={currentPage === 'courses' ? '#1d4ed8' : '#64748b'} />
+              <span>Explore Learning (25 Courses)</span>
+            </button>
+
+            <button
+              onClick={() => {
+                setMobileMenuOpen(false);
+                const el = document.getElementById('webinar-spotlight-section');
+                if (el) el.scrollIntoView({ behavior: 'smooth' });
+                else onNavigate('landing');
+              }}
+              style={{
+                width: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 12,
+                padding: '12px 14px',
+                borderRadius: 10,
+                background: 'transparent',
+                border: 'none',
+                color: '#334155',
+                fontSize: 15,
+                fontWeight: 600,
+                cursor: 'pointer',
+                textAlign: 'left'
+              }}
+            >
+              <Flame size={18} color="#ef4444" />
+              <span>Live Masterclass</span>
+            </button>
+          </div>
+
+          <div style={{ height: 1, background: '#f1f5f9', margin: '14px 0' }} />
+
+          {/* User Section in Mobile Menu */}
+          {user ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 12,
+                padding: '10px 14px',
+                background: '#f8fafc',
+                borderRadius: 12,
+                border: '1px solid #e2e8f0'
+              }}>
+                <div style={{
+                  width: 36,
+                  height: 36,
+                  borderRadius: '50%',
+                  background: '#eff6ff',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0
+                }}>
+                  <User size={18} color="#1d4ed8" />
+                </div>
+                <div style={{ overflow: 'hidden' }}>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: '#0f172a' }}>{user.name}</div>
+                  <div style={{ fontSize: 12, color: '#64748b', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>{user.email}</div>
+                </div>
+              </div>
+
+              <button
+                onClick={() => {
+                  onNavigate('dashboard');
+                  setMobileMenuOpen(false);
+                }}
+                style={{
+                  width: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 12,
+                  padding: '12px 14px',
+                  borderRadius: 10,
+                  background: '#eff6ff',
+                  border: '1px solid #bfdbfe',
+                  color: '#1d4ed8',
+                  fontSize: 14,
+                  fontWeight: 700,
+                  cursor: 'pointer'
+                }}
+              >
+                <LayoutDashboard size={18} color="#1d4ed8" />
+                <span>My Learning Dashboard</span>
+              </button>
+
+              <button
+                onClick={() => {
+                  if (onLogout) onLogout();
+                  setMobileMenuOpen(false);
+                }}
+                style={{
+                  width: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 12,
+                  padding: '10px 14px',
+                  borderRadius: 10,
+                  background: 'transparent',
+                  border: 'none',
+                  color: '#dc2626',
+                  fontSize: 14,
+                  fontWeight: 600,
+                  cursor: 'pointer'
+                }}
+              >
+                <LogOut size={16} color="#dc2626" />
+                <span>Sign Out</span>
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => {
+                onOpenAuth('login');
+                setMobileMenuOpen(false);
+              }}
+              style={{
+                width: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 8,
+                padding: '13px',
+                borderRadius: 12,
+                background: 'linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%)',
+                color: '#ffffff',
+                border: 'none',
+                fontSize: 15,
+                fontWeight: 700,
+                cursor: 'pointer',
+                boxShadow: '0 8px 20px rgba(29, 78, 216, 0.25)'
+              }}
+            >
+              <User size={18} />
+              <span>Log In / Sign Up</span>
+            </button>
+          )}
+        </div>
+      )}
     </header>
   );
 }

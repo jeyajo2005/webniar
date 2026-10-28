@@ -683,3 +683,58 @@ a {
 .btn-hero-shimmer {
   animation: shimmerGlow 3s ease-in-out infinite;
 }
+
+/* ==========================================================================
+   Responsive & Mobile Navigation Design System
+   ========================================================================== */
+
+.mobile-menu-btn {
+  display: none;
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 860px) {
+  .desktop-nav {
+    display: none !important;
+  }
+
+  .nav-search-bar {
+    display: none !important;
+  }
+
+  .desktop-auth-btn {
+    display: none !important;
+  }
+
+  .desktop-user-name,
+  .desktop-user-chevron {
+    display: none !important;
+  }
+
+  .mobile-menu-btn {
+    display: flex !important;
+  }
+
+  /* Make hero grid stack vertically on mobile */
+  .hero-grid {
+    grid-template-columns: 1fr !important;
+    gap: 36px !important;
+  }
+
+  /* Reduce padding on mobile devices for card */
+  .container {
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+}
+

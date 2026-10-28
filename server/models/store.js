@@ -233,7 +233,7 @@ export const memoryStore = {
       _id: 'user_student_01',
       name: 'Arun Kumar',
       email: 'student@kaira.io',
-      password: '$2a$10$wU0uRk76c7s0hK0lB0oYgeX3/eN4X8Uf2H2jZ0Z2z3qY4s1Y4v4hK', // password123
+      password: '$2b$10$YxVTil.KqH0okXsQo.kgeeNSr8KvTeKj4ZmvmYnfPPIdtO55gzF3u', // password123
       phone: '+919876543210',
       role: 'student',
       avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80',
@@ -244,7 +244,7 @@ export const memoryStore = {
       _id: 'user_admin_01',
       name: 'Dr. Elena Vance (Admin)',
       email: 'admin@kaira.io',
-      password: '$2a$10$wU0uRk76c7s0hK0lB0oYgeX3/eN4X8Uf2H2jZ0Z2z3qY4s1Y4v4hK', // admin123 / password123
+      password: '$2b$10$JfggnERezYg2Kkt1l5rN9eh2CbRnc/r3zkFuWYGGyf8UesXW/N4hi', // admin123
       phone: '+919812345678',
       role: 'admin',
       avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=150&q=80',
